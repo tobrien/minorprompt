@@ -17,13 +17,13 @@ MinorPrompt helps you:
 ## Installation
 
 ```bash
-npm install minor-prompt
+npm install @tobrien/minorprompt
 ```
 
 ## Basic Usage
 
 ```typescript
-import { MinorPrompt, Formatter } from 'minor-prompt';
+import { MinorPrompt, Formatter } from '@tobrien/minorprompt';
 
 // Create a new prompt
 const prompt = MinorPrompt.create();
@@ -39,7 +39,7 @@ prompt.addContent("Explain how promises work in JavaScript");
 prompt.addContext("This is for a beginner JavaScript tutorial");
 
 // Create a persona
-const teacher = MinorPrompt.createPersona("Teacher", "Helpful coding instructor");
+const teacher = MinorPrompt.createPersona("Teacher");
 teacher.addTrait("You are a teacher who explains technical concepts in simple terms");
 teacher.addTrait("You have 10+ years of experience teaching programming languages");
 teacher.addInstruction("Explain concepts using simple analogies");
@@ -116,6 +116,77 @@ const formatter = Formatter.create("gpt-4o", {
 });
 ```
 
+MinorPrompt supports various formatting styles to organize your prompt elements:
+
+#### Available Formatting Options
+
+- **areaSeparator**: Determines how major areas (Instructions, Content, Context) are formatted
+  - `"tag"`: Uses XML-style tags `<instructions>...</instructions>`
+  - `"markdown"`: Uses markdown headers `#### Instructions`
+
+- **sectionSeparator**: Determines how sections within areas are formatted
+  - `"tag"`: Uses XML-style tags `<section title="Best Practices">...</section>`
+  - `"markdown"`: Uses markdown subheaders `#### Section : Best Practices`
+
+#### Examples of Different Separator Styles
+
+Here's how the same prompt would be formatted using different separator styles:
+
+**Tag Style (Default)**
+
+```
+<instructions>
+  Answer in a concise manner
+  Provide code examples when appropriate
+  
+  <section title="Best Practices">
+    Follow DRY (Don't Repeat Yourself) principles
+    Write readable code with clear variable names
+    Add comments for complex logic
+  </section>
+</instructions>
+
+<contents>
+  Explain how promises work in JavaScript
+</contents>
+
+<context>
+  This is for a beginner JavaScript tutorial
+</context>
+```
+
+**Markdown Style**
+
+```
+#### Instructions
+
+Answer in a concise manner
+Provide code examples when appropriate
+
+#### Section : Best Practices
+
+Follow DRY (Don't Repeat Yourself) principles
+Write readable code with clear variable names
+Add comments for complex logic
+
+#### Contents
+
+Explain how promises work in JavaScript
+
+#### Context
+
+This is for a beginner JavaScript tutorial
+```
+
+Different LLM providers have different recommendations for prompt formatting:
+
+- **Anthropic (Claude)** generally recommends using XML-style tags to clearly delineate sections of prompts
+- **OpenAI (GPT)** models work well with both markdown-style formatting and XML tags
+
+The field of prompt engineering is rapidly evolving, with new research and best practices emerging regularly. MinorPrompt's flexible formatting system allows you to adapt to these changes without rewriting your prompts entirely.
+
+By separating the structure of your prompt (instructions, context, content) from its formatting, MinorPrompt makes it easier to experiment with different formatting approaches to find what works best for your specific use case and model.
+
 ## Model Support
 
 The initial version of MinorPrompt is designed specifically for the OpenAI API with models such as:
@@ -123,6 +194,8 @@ The initial version of MinorPrompt is designed specifically for the OpenAI API w
 - gpt-4o-mini
 - o1-mini
 - o1
+- o1-preview
+- o1-pro
 - o3-mini
 
 Future versions will be expanded to support other LLM providers and their respective models.
