@@ -1,5 +1,4 @@
-import { Message, Model, Role } from "../src/chat.d";
-import { getPersonaRole, createChatRequest } from "../src/chat";
+import { createRequest, getPersonaRole, Message, Model } from "../src/chat";
 
 describe("chat", () => {
     describe("getPersonaRole", () => {
@@ -27,15 +26,15 @@ describe("chat", () => {
     describe("createChatRequest", () => {
         it("should create a chat request with empty messages array", () => {
             const model: Model = "gpt-4o";
-            const chatRequest = createChatRequest(model);
+            const request = createRequest(model);
 
-            expect(chatRequest.model).toBe(model);
-            expect(chatRequest.messages).toEqual([]);
+            expect(request.model).toBe(model);
+            expect(request.messages).toEqual([]);
         });
 
         it("should add messages to the chat request", () => {
             const model: Model = "gpt-4o";
-            const chatRequest = createChatRequest(model);
+            const request = createRequest(model);
 
             const message1: Message = {
                 role: "user",
@@ -47,10 +46,10 @@ describe("chat", () => {
                 content: "Hi there!"
             };
 
-            chatRequest.addMessage(message1);
-            chatRequest.addMessage(message2);
+            request.addMessage(message1);
+            request.addMessage(message2);
 
-            expect(chatRequest.messages).toEqual([message1, message2]);
+            expect(request.messages).toEqual([message1, message2]);
         });
     });
 });

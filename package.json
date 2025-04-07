@@ -3,7 +3,6 @@
     "version": "0.0.1",
     "description": "Get it together, and organize your prompts.",
     "type": "module",
-    "main": "./dist/main.cjs",
     "module": "./dist/main.js",
     "types": "./dist/main.d.ts",
     "packageManager": "pnpm@10.7.1",
@@ -13,8 +12,20 @@
     },
     "exports": {
         ".": {
-            "require": "./dist/main.cjs",
-            "import": "./dist/main.js"
+            "import": "./dist/minorPrompt.js",
+            "types": "./dist/minorPrompt.d.ts"
+        },
+        "./formatter": {
+            "import": "./dist/formatter.js",
+            "types": "./dist/formatter.d.ts"
+        },
+        "./constants": {
+            "import": "./dist/constants.js",
+            "types": "./dist/constants.d.ts"
+        },
+        "./chat": {
+            "import": "./dist/chat.js",
+            "types": "./dist/chat.d.ts"
         }
     },
     "scripts": {

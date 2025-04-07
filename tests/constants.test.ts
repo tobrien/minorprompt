@@ -1,4 +1,4 @@
-import { AreaSeparator, SectionSeparator } from "../src/formatter.d";
+import { AreaSeparator, SectionSeparator } from "../src/formatter";
 import {
     DEFAULT_AREA_SEPARATOR,
     DEFAULT_SECTION_SEPARATOR,

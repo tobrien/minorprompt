@@ -1,4 +1,43 @@
-import { Trait, Instruction, Content, Context, Persona, WeightedText, Section, MinorPrompt } from "./minorPrompt.d";
+export interface WeightedText {
+    text: string;
+    weight: number;
+}
+
+export interface Instance {
+    personas: Persona[];
+    instructions: (Instruction | Section<Instruction>)[];
+    contents: (Content | Section<Content>)[];
+    contexts: (Context | Section<Context>)[];
+
+    addPersona(persona: Persona): void;
+    addInstruction(instruction: Instruction | string | Section<Instruction>, options?: { section?: string }): void;
+    addContent(content: Content | string | Section<Content>, options?: { section?: string }): void;
+    addContext(context: Context | string | Section<Context>, options?: { section?: string }): void;
+}
+
+export interface Persona {
+    name: string;
+    traits: Trait[];
+    instructions: Instruction[];
+
+    addTrait(trait: Trait | string): void;
+    addInstruction(instruction: Instruction | string): void;
+}
+
+export type Trait = WeightedText;
+
+export type Instruction = WeightedText;
+
+export type Content = WeightedText;
+
+export type Context = WeightedText;
+
+export interface Section<T extends WeightedText> {
+    title: string;
+    items: T[];
+
+    add(item: T | string): void;
+}
 
 export const createWeightedText = <T extends WeightedText>(text: string): T => {
     return {
@@ -69,7 +108,7 @@ export const createSection = <T extends WeightedText>(title: string): Section<T>
     }
 }
 
-export const create = (): MinorPrompt => {
+export const create = (): Instance => {
     const personas: Persona[] = [];
     const instructions: (Instruction | Section<Instruction>)[] = [];
     const contents: (Content | Section<Content>)[] = [];

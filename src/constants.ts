@@ -1,4 +1,4 @@
-import { AreaSeparator, FormatOptions, SectionSeparator } from "./formatter.d";
+import { AreaSeparator, FormatOptions, SectionSeparator } from "./formatter";
 
 export const DEFAULT_AREA_SEPARATOR: AreaSeparator = "tag";
 export const DEFAULT_SECTION_SEPARATOR: SectionSeparator = "tag";

@@ -1,4 +1,4 @@
-import { Trait, Instruction, Content, Context, Persona, WeightedText, Section, MinorPrompt } from "../src/minorPrompt.d";
+import { Trait, Instruction, Content, Context, Persona, WeightedText, Section, Instance as MinorPromptInstance } from "../src/minorPrompt";
 import {
     createWeightedText,
     createTrait,

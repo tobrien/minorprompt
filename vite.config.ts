@@ -36,7 +36,7 @@ export default defineConfig({
     plugins: [
         ...VitePluginNode({
             adapter: 'express',
-            appPath: './src/main.ts',
+            appPath: './src/minorPrompt.ts',
             exportName: 'viteNodeApp',
             tsCompiler: 'swc',
         }),
@@ -59,12 +59,17 @@ export default defineConfig({
         target: 'esnext',
         outDir: 'dist',
         rollupOptions: {
-            input: 'src/main.ts',
+            input: [
+                'src/formatter.ts',
+                'src/minorPrompt.ts',
+                'src/chat.ts',
+            ],
         },
         lib: {
-            entry: 'src/main.ts',
+            entry: 'src/minorPrompt.ts',
             name: 'minorPrompt',
             fileName: (format) => `minorPrompt.${format}.js`,
+            formats: ['es'],
         },
     },
 }); 

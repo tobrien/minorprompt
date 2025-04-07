@@ -1,8 +1,7 @@
-import { Model } from "../src/chat.d";
-import { MinorPrompt, Instruction, Content, Context, Persona, WeightedText, Section, Trait } from "../src/minorPrompt.d";
-import { Formatter, AreaSeparator, SectionSeparator, SectionTitleProperty, FormatOptions } from "../src/formatter.d";
-import { create, format, formatArray, formatPersona } from "../src/formatter";
-import { DEFAULT_AREA_SEPARATOR, DEFAULT_SECTION_SEPARATOR, DEFAULT_SECTION_INDENTATION, DEFAULT_SECTION_TITLE_PROPERTY, DEFAULT_SECTION_TITLE_PREFIX, DEFAULT_SECTION_TITLE_SEPARATOR } from "../src/constants";
+import { Model } from "../src/chat";
+import { DEFAULT_AREA_SEPARATOR, DEFAULT_SECTION_INDENTATION, DEFAULT_SECTION_SEPARATOR, DEFAULT_SECTION_TITLE_PREFIX, DEFAULT_SECTION_TITLE_PROPERTY, DEFAULT_SECTION_TITLE_SEPARATOR } from "../src/constants";
+import { AreaSeparator, FormatOptions, formatPersona, format, formatArray, create, SectionTitleProperty, SectionSeparator } from "../src/formatter";
+import { Content, Context, Instruction, Instance as MinorPromptInstance, Persona, Section, WeightedText } from "../src/minorPrompt";
 
 // Let's create simple mock functions instead of using jest.fn()
 const createMockFn = () => function () { return undefined; };
@@ -19,8 +18,8 @@ describe("formatter", () => {
 
     describe("formatPersona", () => {
         it("should format persona correctly", () => {
-            const traits = ["trait1", "trait2"];
-            const instructions = ["instruction1", "instruction2"];
+            const traits = [{ text: "trait1", weight: 1 }, { text: "trait2", weight: 1 }];
+            const instructions = [{ text: "instruction1", weight: 1 }, { text: "instruction2", weight: 1 }];
 
             const persona: Persona = {
                 name: "TestPersona",
@@ -30,7 +29,16 @@ describe("formatter", () => {
                 addInstruction: createMockFn()
             };
 
-            const result = formatPersona(model, persona);
+            const options: FormatOptions = {
+                areaSeparator: DEFAULT_AREA_SEPARATOR,
+                sectionSeparator: DEFAULT_SECTION_SEPARATOR,
+                sectionIndentation: DEFAULT_SECTION_INDENTATION,
+                sectionTitleProperty: DEFAULT_SECTION_TITLE_PROPERTY as SectionTitleProperty,
+                sectionTitlePrefix: DEFAULT_SECTION_TITLE_PREFIX,
+                sectionTitleSeparator: DEFAULT_SECTION_TITLE_SEPARATOR
+            };
+
+            const result = formatPersona(model, persona, options);
             expect(result.role).toBe("system");
             expect(result.content).toBe("trait1\ntrait2\n\ninstruction1\ninstruction2");
         });
@@ -140,7 +148,7 @@ describe("formatter", () => {
         });
 
         it("should format prompt correctly", () => {
-            const prompt: MinorPrompt = {
+            const prompt: MinorPromptInstance = {
                 personas: [{
                     name: "TestPersona",
                     traits: createJoinable([{ text: "trait1", weight: 1 }]),
