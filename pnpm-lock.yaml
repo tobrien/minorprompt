@@ -55,13 +55,13 @@ importers:
         version: 5.8.3
       vite:
         specifier: ^4.5.11
-        version: 4.5.12(@types/node@22.15.3)
+        version: 4.5.13(@types/node@22.15.3)
       vite-plugin-dts:
         specifier: ^4.5.3
-        version: 4.5.3(@types/node@22.15.3)(rollup@3.29.5)(typescript@5.8.3)(vite@4.5.12(@types/node@22.15.3))
+        version: 4.5.3(@types/node@22.15.3)(rollup@3.29.5)(typescript@5.8.3)(vite@4.5.13(@types/node@22.15.3))
       vite-plugin-node:
         specifier: ^3.1.0
-        version: 3.1.0(@swc/core@1.11.22)(vite@4.5.12(@types/node@22.15.3))
+        version: 3.1.0(@swc/core@1.11.22)(vite@4.5.13(@types/node@22.15.3))
 
 packages:
 
@@ -2410,8 +2410,8 @@ packages:
       '@swc/core':
         optional: true
 
-  vite@4.5.12:
-    resolution: {integrity: sha512-qrMwavANtSz91nDy3zEiUHMtL09x0mniQsSMvDkNxuCBM1W5vriJ22hEmwTth6DhLSWsZnHBT0yHFAQXt6efGA==}
+  vite@4.5.13:
+    resolution: {integrity: sha512-Hgp8IF/yZDzKsN1hQWOuQZbrKiaFsbQud+07jJ8h9m9PaHWkpvZ5u55Xw5yYjWRXwRQ4jwFlJvY7T7FUJG9MCA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -5288,7 +5288,7 @@ snapshots:
       '@types/istanbul-lib-coverage': 2.0.6
       convert-source-map: 2.0.0
 
-  vite-plugin-dts@4.5.3(@types/node@22.15.3)(rollup@3.29.5)(typescript@5.8.3)(vite@4.5.12(@types/node@22.15.3)):
+  vite-plugin-dts@4.5.3(@types/node@22.15.3)(rollup@3.29.5)(typescript@5.8.3)(vite@4.5.13(@types/node@22.15.3)):
     dependencies:
       '@microsoft/api-extractor': 7.52.3(@types/node@22.15.3)
       '@rollup/pluginutils': 5.1.4(rollup@3.29.5)
@@ -5301,24 +5301,24 @@ snapshots:
       magic-string: 0.30.17
       typescript: 5.8.3
     optionalDependencies:
-      vite: 4.5.12(@types/node@22.15.3)
+      vite: 4.5.13(@types/node@22.15.3)
     transitivePeerDependencies:
       - '@types/node'
       - rollup
       - supports-color
 
-  vite-plugin-node@3.1.0(@swc/core@1.11.22)(vite@4.5.12(@types/node@22.15.3)):
+  vite-plugin-node@3.1.0(@swc/core@1.11.22)(vite@4.5.13(@types/node@22.15.3)):
     dependencies:
       '@rollup/pluginutils': 4.2.1
       chalk: 4.1.2
       debug: 4.4.0
-      vite: 4.5.12(@types/node@22.15.3)
+      vite: 4.5.13(@types/node@22.15.3)
     optionalDependencies:
       '@swc/core': 1.11.22
     transitivePeerDependencies:
       - supports-color
 
-  vite@4.5.12(@types/node@22.15.3):
+  vite@4.5.13(@types/node@22.15.3):
     dependencies:
       esbuild: 0.18.20
       postcss: 8.5.3
