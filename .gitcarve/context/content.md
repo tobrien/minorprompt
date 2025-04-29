@@ -1,0 +1,1 @@
+MinorPrompt helps you capture and create Prompts.
