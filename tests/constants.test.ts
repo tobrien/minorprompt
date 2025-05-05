@@ -1,6 +1,5 @@
-import { AreaSeparator, SectionSeparator } from "../src/formatter";
+import { SectionSeparator } from "../src/formatter";
 import {
-    DEFAULT_AREA_SEPARATOR,
     DEFAULT_SECTION_SEPARATOR,
     DEFAULT_SECTION_INDENTATION,
     DEFAULT_SECTION_TAG,
@@ -9,10 +8,6 @@ import {
 } from "../src/constants";
 
 describe("constants", () => {
-    it("should have correct default area separator", () => {
-        expect(DEFAULT_AREA_SEPARATOR).toBe("tag");
-    });
-
     it("should have correct default section separator", () => {
         expect(DEFAULT_SECTION_SEPARATOR).toBe("tag");
     });
