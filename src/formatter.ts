@@ -1,62 +1,51 @@
+import { Instruction } from "minorPrompt";
 import * as Chat from "./chat";
 import { getPersonaRole, Message, Model } from "./chat";
-import { DEFAULT_AREA_SEPARATOR, DEFAULT_CONTENTS_AREA_TITLE, DEFAULT_CONTEXT_AREA_TITLE, DEFAULT_FORMAT_OPTIONS, DEFAULT_INSTRUCTIONS_AREA_TITLE, DEFAULT_SECTION_INDENTATION, DEFAULT_SECTION_SEPARATOR, DEFAULT_SECTION_TITLE_PREFIX, DEFAULT_SECTION_TITLE_PROPERTY, DEFAULT_SECTION_TITLE_SEPARATOR } from "./constants";
-import { Instance as MinorPromptInstance, Persona, Section, WeightedText } from "./minorPrompt";
+import { DEFAULT_FORMAT_OPTIONS } from "./constants";
+import { Section } from "./items/section";
+import { Weighted } from "./items/weighted";
+import { Prompt } from "./prompt";
 
-export type AreaSeparator = "tag" | "markdown";
 export type SectionSeparator = "tag" | "markdown";
 export type SectionTitleProperty = "title" | "name";
 
-export interface Instance {
-    format(prompt: MinorPromptInstance): Chat.Request;
-}
-
 export interface FormatOptions {
-    areaSeparator: AreaSeparator;
     sectionSeparator: SectionSeparator;
     sectionIndentation: boolean;
     sectionTitleProperty: SectionTitleProperty;
-    sectionTitlePrefix: string;
-    sectionTitleSeparator: string;
+    sectionTitlePrefix?: string;
+    sectionTitleSeparator?: string;
+    sectionDepth: number;
 }
 
 // Type guard to check if an object is a Section
-function isSection<T extends WeightedText>(obj: T | Section<T>): obj is Section<T> {
+function isSection<T extends Weighted>(obj: T | Section<T>): obj is Section<T> {
     return obj && typeof obj === 'object' && 'items' in obj && Array.isArray((obj as Section<T>).items);
 }
 
-export const formatPersona = (model: Model, persona: Persona, options: FormatOptions): Message => {
+export const formatPersona = (model: Model, persona: Section<Instruction>, options: Partial<FormatOptions> = DEFAULT_FORMAT_OPTIONS): Message => {
 
-    const formattedTraits = persona.traits.map(trait => format(trait, options)).join("\n");
-    const formattedInstructions = persona.instructions.map(instruction => format(instruction, options)).join("\n");
+    const formattedPersona = formatSection(persona, options);
 
     return {
         role: getPersonaRole(model),
-        content: `${formattedTraits}\n\n${formattedInstructions}`,
+        content: `${formattedPersona}`,
     }
 }
 
-export const format = <T extends WeightedText>(
+export const format = <T extends Weighted>(
     weightedText: T | Section<T>,
-    options: FormatOptions
+    options: Partial<FormatOptions> = DEFAULT_FORMAT_OPTIONS
 ): string => {
 
-    const titleProperty = options.sectionTitleProperty ?? DEFAULT_SECTION_TITLE_PROPERTY;
-    const titlePrefix = options.sectionTitlePrefix ?? DEFAULT_SECTION_TITLE_PREFIX;
-    const titleSeparator = options.sectionTitleSeparator ?? DEFAULT_SECTION_TITLE_SEPARATOR;
-    const sectionSeparator = options.sectionSeparator ?? DEFAULT_SECTION_SEPARATOR;
+    const formatOptions: FormatOptions = {
+        ...DEFAULT_FORMAT_OPTIONS,
+        ...options,
+    };
 
     let result: string = "";
     if (isSection(weightedText)) {
-        const section = weightedText;
-        const title = section[titleProperty as keyof Section<T>];
-        const content = section.items.map((item: T) => format(item, options)).join("\n\n");
-
-        if (sectionSeparator === "tag") {
-            result = `<section title="${title}">\n  ${content}\n</section>`;
-        } else {
-            result = `#### ${titlePrefix}${titleSeparator}${title}\n\n${content}`;
-        }
+        result = formatSection(weightedText, formatOptions);
     } else {
         const item = weightedText;
         result = item.text;
@@ -64,68 +53,61 @@ export const format = <T extends WeightedText>(
     return result;
 }
 
-const formatArea = <T extends WeightedText>(items: (T | Section<T>)[], title: string, options: FormatOptions): string => {
-    const areaSeparator = options.areaSeparator ?? DEFAULT_AREA_SEPARATOR;
+export const formatSection = <T extends Weighted>(section: Section<T>, options: Partial<FormatOptions> = DEFAULT_FORMAT_OPTIONS): string => {
+    const formatOptions: FormatOptions = {
+        ...DEFAULT_FORMAT_OPTIONS,
+        ...options,
+    };
 
-    const formattedItems = items.map(item => format(item, options)).join("\n\n");
+    const formattedItems = section.items.map(item => format(item, { ...formatOptions, sectionDepth: formatOptions.sectionDepth + 1 })).join("\n\n");
 
-    if (areaSeparator === "tag") {
-        return `<${title.toLowerCase()}>\n${formattedItems}\n</${title.toLowerCase()}>`;
+    if (formatOptions.sectionSeparator === "tag") {
+        return `<${section.title ?? "section"}>\n${formattedItems}\n</${section.title ?? "section"}>`;
     } else {
-        return `#### ${title}\n\n${formattedItems}`;
+        // Default depth to 1 if not provided, resulting in H2 (##) matching the test case.
+        const headingLevel = (formatOptions.sectionDepth ?? 1) + 1;
+        const hashes = '#'.repeat(headingLevel);
+        return `${hashes} ${formatOptions.sectionTitlePrefix ? `${formatOptions.sectionTitlePrefix} ${formatOptions.sectionTitleSeparator} ` : ""}${section.title}\n\n${formattedItems}`;
     }
 }
 
 // Helper function to format arrays of items or sections
-export const formatArray = <T extends WeightedText>(
+export const formatArray = <T extends Weighted>(
     items: (T | Section<T>)[],
-    options: FormatOptions
+    options: Partial<FormatOptions> = DEFAULT_FORMAT_OPTIONS
 ): string => {
-    return items.map(item => format(item, options)).join("\n\n");
-}
-
-export const create = (model: Model, options: {
-    areaSeparator?: AreaSeparator;
-    sectionSeparator?: SectionSeparator;
-    sectionIndentation?: boolean;
-    sectionTitleProperty?: SectionTitleProperty;
-    sectionTitlePrefix?: string;
-    sectionTitleSeparator?: string;
-} = DEFAULT_FORMAT_OPTIONS): Instance => {
 
     const formatOptions: FormatOptions = {
-        areaSeparator: options.areaSeparator ?? DEFAULT_AREA_SEPARATOR,
-        sectionSeparator: options.sectionSeparator ?? DEFAULT_SECTION_SEPARATOR,
-        sectionIndentation: options.sectionIndentation ?? DEFAULT_SECTION_INDENTATION,
-        sectionTitleProperty: options.sectionTitleProperty ?? DEFAULT_SECTION_TITLE_PROPERTY,
-        sectionTitlePrefix: options.sectionTitlePrefix ?? DEFAULT_SECTION_TITLE_PREFIX,
-        sectionTitleSeparator: options.sectionTitleSeparator ?? DEFAULT_SECTION_TITLE_SEPARATOR,
+        ...DEFAULT_FORMAT_OPTIONS,
+        ...options,
     };
 
-
-    const formatPrompt = (prompt: MinorPromptInstance): Chat.Request => {
-        const chatRequest: Chat.Request = Chat.createRequest(model);
-
-        prompt.personas.forEach(persona => {
-            chatRequest.addMessage(formatPersona(model, persona, formatOptions));
-        });
-
-        const formattedAreas = [
-            formatArea(prompt.instructions, DEFAULT_INSTRUCTIONS_AREA_TITLE, formatOptions),
-            formatArea(prompt.contents, DEFAULT_CONTENTS_AREA_TITLE, formatOptions),
-            formatArea(prompt.contexts, DEFAULT_CONTEXT_AREA_TITLE, formatOptions),
-        ].join("\n\n");
-
-        chatRequest.addMessage({
-            role: "user",
-            content: formattedAreas,
-        });
-
-        return chatRequest;
-    }
-
-    return {
-        format: formatPrompt,
-    }
+    return items.map(item => format(item, formatOptions)).join("\n\n");
 }
 
+export const formatPrompt = (model: Model, prompt: Prompt, options: Partial<FormatOptions> = DEFAULT_FORMAT_OPTIONS): Chat.Request => {
+
+    const formatOptions: FormatOptions = {
+        ...DEFAULT_FORMAT_OPTIONS,
+        ...options,
+    };
+
+    const chatRequest: Chat.Request = Chat.createRequest(model);
+
+    [prompt.persona].forEach((persona: Section<Instruction>) => {
+        chatRequest.addMessage(formatPersona(model, persona, formatOptions));
+    });
+
+    const formattedAreas = [
+        formatSection(prompt.instructions, formatOptions),
+        formatSection(prompt.contents, formatOptions),
+        formatSection(prompt.contexts, formatOptions),
+    ].join("\n\n");
+
+    chatRequest.addMessage({
+        role: "user",
+        content: formattedAreas,
+    });
+
+    return chatRequest;
+}
