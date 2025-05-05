@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite';
 import { VitePluginNode } from 'vite-plugin-node';
 import replace from '@rollup/plugin-replace';
+// import { visualizer } from 'rollup-plugin-visualizer';
 import { execSync } from 'child_process';
+import shebang from 'rollup-plugin-preserve-shebang';
 import dts from 'vite-plugin-dts';
+
 let gitInfo = {
     branch: '',
     commit: '',
@@ -39,7 +42,15 @@ export default defineConfig({
             appPath: './src/minorPrompt.ts',
             exportName: 'viteNodeApp',
             tsCompiler: 'swc',
+            swcOptions: {
+                sourceMaps: true,
+            },
         }),
+        // visualizer({
+        //     template: 'network',
+        //     filename: 'network.html',
+        //     projectRoot: process.cwd(),
+        // }),
         replace({
             '__VERSION__': process.env.npm_package_version,
             '__GIT_BRANCH__': gitInfo.branch,
@@ -47,6 +58,7 @@ export default defineConfig({
             '__GIT_TAGS__': gitInfo.tags === '' ? '' : `T:${gitInfo.tags}`,
             '__GIT_COMMIT_DATE__': gitInfo.commitDate,
             '__SYSTEM_INFO__': `${process.platform} ${process.arch} ${process.version}`,
+            preventAssignment: true,
         }),
         dts({
             entryRoot: 'src',
@@ -58,18 +70,28 @@ export default defineConfig({
     build: {
         target: 'esnext',
         outDir: 'dist',
-        rollupOptions: {
-            input: [
-                'src/formatter.ts',
-                'src/minorPrompt.ts',
-                'src/chat.ts',
-            ],
-        },
         lib: {
-            entry: 'src/minorPrompt.ts',
-            name: 'minorPrompt',
-            fileName: (format) => `minorPrompt.${format}.js`,
+            entry: './src/minorPrompt.ts',
             formats: ['es'],
         },
+        rollupOptions: {
+            external: ['@tobrien/minorprompt', '@tobrien/minorprompt/formatter', '@tobrien/minorprompt/chat'],
+            input: 'src/cabazooka.ts',
+            output: {
+                format: 'esm',
+                entryFileNames: '[name].js',
+                preserveModules: true,
+                exports: 'named',
+            },
+            plugins: [
+                shebang({
+                    shebang: '#!/usr/bin/env node',
+                }),
+            ],
+        },
+        // Make sure Vite generates ESM-compatible code
+        modulePreload: false,
+        minify: false,
+        sourcemap: true
     },
 }); 
