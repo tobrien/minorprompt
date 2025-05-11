@@ -2,11 +2,12 @@ import * as fs from 'fs/promises';
 import { marked } from 'marked';
 import { create as createSection, Section } from './items/section';
 import { create as createWeighted, Weighted } from './items/weighted';
+import { Parameters } from 'items/parameters';
 
-export async function parseFile<T extends Weighted>(filePath: string): Promise<Section<T>> {
+export async function parseFile<T extends Weighted>(filePath: string, options: { weight?: number, parameters?: Parameters } = { weight: 1.0, parameters: {} }): Promise<Section<T>> {
     try {
         const markdownContent = await fs.readFile(filePath, 'utf-8');
-        return parse(markdownContent);
+        return parse(markdownContent, options);
     } catch (error) {
         // Log the error or handle it appropriately
         // eslint-disable-next-line no-console
@@ -26,12 +27,12 @@ export async function parseFile<T extends Weighted>(filePath: string): Promise<S
  * @param markdownContent The Markdown content to parse
  * @returns A Section containing all content in a hierarchical structure
  */
-export const parse = <T extends Weighted>(markdownContent: string): Section<T> => {
+export const parse = <T extends Weighted>(markdownContent: string, options: { weight?: number, parameters?: Parameters } = { weight: 1.0, parameters: {} }): Section<T> => {
     // Use marked.lexer to get tokens without full parsing/rendering
     const tokens = marked.lexer(markdownContent);
 
     // Create the main section (with no title by default)
-    const mainSection = createSection<T>('');
+    const mainSection = createSection<T>('', options);
 
     // Track sections at each depth level
     const sectionStack: Section<T>[] = [mainSection];
@@ -54,7 +55,7 @@ export const parse = <T extends Weighted>(markdownContent: string): Section<T> =
                 isFirstToken = false;
 
                 // Create a new section with this heading
-                const newSection = createSection<T>(token.text);
+                const newSection = createSection<T>(token.text, options);
 
                 // Ensure the section stack has the right size based on this heading's depth
                 // (e.g., a depth-2 heading should be added to the depth-1 section)
@@ -81,7 +82,7 @@ export const parse = <T extends Weighted>(markdownContent: string): Section<T> =
 
             case 'paragraph': {
                 isFirstToken = false;
-                const instruction: T = createWeighted<T>(token.text);
+                const instruction: T = createWeighted<T>(token.text, options);
                 const currentSection = sectionStack[sectionStack.length - 1];
                 currentSection.add(instruction);
                 break;
@@ -91,7 +92,7 @@ export const parse = <T extends Weighted>(markdownContent: string): Section<T> =
                 isFirstToken = false;
                 // Convert list items to instructions
                 const listInstructionContent = token.items.map((item: any) => `- ${item.text}`).join('\n');
-                const listInstruction: T = createWeighted<T>(listInstructionContent);
+                const listInstruction: T = createWeighted<T>(listInstructionContent, options);
                 const currentSection = sectionStack[sectionStack.length - 1];
                 currentSection.add(listInstruction);
                 break;
@@ -100,7 +101,7 @@ export const parse = <T extends Weighted>(markdownContent: string): Section<T> =
             case 'code': {
                 isFirstToken = false;
                 // Represent code blocks as instructions
-                const codeInstruction: T = createWeighted<T>(`\`\`\`${token.lang || ''}\n${token.text}\n\`\`\``);
+                const codeInstruction: T = createWeighted<T>(`\`\`\`${token.lang || ''}\n${token.text}\n\`\`\``, options);
                 const currentSection = sectionStack[sectionStack.length - 1];
                 currentSection.add(codeInstruction);
                 break;
@@ -114,7 +115,7 @@ export const parse = <T extends Weighted>(markdownContent: string): Section<T> =
                 isFirstToken = false;
                 // Treat other block tokens' text as instructions for robustness
                 if ('text' in token && token.text) {
-                    const fallbackInstruction: T = createWeighted<T>(token.text);
+                    const fallbackInstruction: T = createWeighted<T>(token.text, options);
                     const currentSection = sectionStack[sectionStack.length - 1];
                     currentSection.add(fallbackInstruction);
                 }

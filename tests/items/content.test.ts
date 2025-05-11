@@ -10,6 +10,7 @@ const mockCreateWeighted = jest.fn();
 // Use unstable_mockModule instead of jest.mock
 jest.unstable_mockModule('../../src/items/weighted', () => ({
     create: mockCreateWeighted,
+    DEFAULT_WEIGHTED_OPTIONS: { weight: 1, parameters: {} },
     __esModule: true
 }));
 
@@ -65,7 +66,7 @@ describe('content', () => {
 
             // Assert
             expect(mockCreateWeighted).toHaveBeenCalledTimes(1);
-            expect(mockCreateWeighted).toHaveBeenCalledWith(text);
+            expect(mockCreateWeighted).toHaveBeenCalledWith(text, { weight: 1, parameters: {} });
             expect(result).toBe(expectedResult); // Check if it returns the object from the mock
         });
 

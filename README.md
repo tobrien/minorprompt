@@ -103,6 +103,144 @@ bestPractices.add("Add comments for complex logic");
 prompt.addInstruction(bestPractices);
 ```
 
+### Setting Section and Item Weights
+
+MinorPrompt allows you to assign weights to sections and individual items within those sections. This can be useful for future enhancements where prompt elements might be prioritized or selected based on their weight.
+
+You can define `weight` for the section itself and a default `itemWeight` for items added to that section using `SectionOptions`. Additionally, `parameters` can be defined at the section level and will be passed down to items added to that section.
+
+```typescript
+// Create a section with specific weights and parameters
+const weightedSection = MinorPrompt.createSection<MinorPrompt.Instruction>("Weighted Topics", {
+  weight: 10, // Weight for the entire section
+  itemWeight: 5, // Default weight for items in this section
+  parameters: { topic: "advanced" } // Parameters passed to items
+});
+
+// Items added to this section will inherit the itemWeight and parameters
+// unless overridden individually.
+weightedSection.add("Discuss {{topic}} caching strategies");
+weightedSection.add("Explain {{topic}} database indexing", { weight: 7 }); // Override itemWeight
+
+prompt.addInstruction(weightedSection);
+```
+
+### Using Parameters for Customization
+
+MinorPrompt supports dynamic content in your prompts through the use of parameters. Parameters allow you to define placeholders in your prompt text (e.g., `{{variable}}`) and replace them with specific values when the prompt is created or formatted. This is a simple yet powerful way to customize prompts for different scenarios without altering the core structure.
+
+Parameters can be passed when creating a prompt, a persona, or a section. They can also be supplied directly when adding individual items like instructions, content, or context if those items are strings with placeholders.
+
+```typescript
+// Define a prompt with a placeholder
+const dynamicPrompt = MinorPrompt.create();
+dynamicPrompt.addInstruction("Translate the following text to {{targetLanguage}}.");
+dynamicPrompt.addContent("Hello, world!");
+
+// Format the prompt, providing parameters
+const formatter = Formatter.create("gpt-4o");
+const chatRequestWithParams = formatter.format(dynamicPrompt, {
+  targetLanguage: "Spanish"
+});
+
+// The instruction in chatRequestWithParams.messages will be:
+// "Translate the following text to Spanish."
+
+// Example with section-level parameters (as shown in the previous section)
+const sectionWithParams = MinorPrompt.createSection("Inquiry", {
+    parameters: { subject: "history" }
+});
+sectionWithParams.add("Tell me about the {{subject}} of ancient Rome.");
+dynamicPrompt.addContent(sectionWithParams);
+
+const chatRequestWithSectionParams = formatter.format(dynamicPrompt, {
+    targetLanguage: "French" // Parameters can be combined
+});
+
+// In chatRequestWithSectionParams, the content section will be:
+// "Tell me about the history of ancient Rome."
+// And the instruction will be:
+// "Translate the following text to French."
+```
+
+### Parsing Markdown for Section Creation
+
+MinorPrompt can simplify the process of structuring your prompts by parsing Markdown content. When you provide Markdown text, MinorPrompt can automatically convert Markdown headers (e.g., `# Title`, `## Subtitle`) into `Section` objects. The text of the header becomes the title of the `Section`.
+
+This allows you to draft complex prompt structures in a familiar Markdown format and then easily import them into MinorPrompt. For instance, a document like this:
+
+```markdown
+# Main Topic
+Some general instructions or content.
+
+## Sub-Topic 1
+Details about the first sub-topic.
+
+### Sub-Sub-Topic A
+Further details.
+
+## Sub-Topic 2
+Details about the second sub-topic.
+```
+
+Could be parsed into a main section titled "Main Topic" containing text and two sub-sections: "Sub-Topic 1" (which itself contains a nested section "Sub-Sub-Topic A") and "Sub-Topic 2". The content under each header would become items within the respective sections.
+
+_(Note: The specific API for initiating Markdown parsing, e.g., `MinorPrompt.fromMarkdown(markdownString)`, would be detailed in the API documentation or further examples.)_
+
+### Manipulating Section Contents
+
+Once you have a `Section` object, whether created directly, through Markdown parsing, or as part of a `MinorPrompt` instance (e.g., `prompt.instructionsSection`), you have several methods to manage its contents. These methods allow for dynamic construction and modification of your prompt structure.
+
+The `Section` interface provides the following methods for item manipulation:
+
+- **`add(item: T | Section<T> | string, options?: WeightedOptions): Section<T>`**
+  Appends a new item or a nested section to the end of the section's item list. If a string is provided, it's typically converted into an appropriate `WeightedText` object (e.g., `Instruction`, `ContentText`).
+  ```typescript
+  mySection.add("New item at the end");
+  const nestedSection = MinorPrompt.createSection("Nested");
+  mySection.add(nestedSection);
+  ```
+
+- **`append(item: T | Section<T> | string, options?: WeightedOptions): Section<T>`**
+  Alias for `add`. Appends an item or nested section to the end.
+  ```typescript
+  mySection.append("Another item at the end");
+  ```
+
+- **`prepend(item: T | Section<T> | string, options?: WeightedOptions): Section<T>`**
+  Adds a new item or a nested section to the beginning of the section's item list.
+  ```typescript
+  mySection.prepend("Item at the very beginning");
+  ```
+
+- **`insert(index: number, item: T | Section<T> | string, options?: WeightedOptions): Section<T>`**
+  Inserts an item or nested section at a specific zero-based `index` within the item list.
+  ```typescript
+  mySection.insert(1, "Item at index 1"); // Inserts after the first item
+  ```
+
+- **`replace(index: number, item: T | Section<T> | string, options?: WeightedOptions): Section<T>`**
+  Replaces the item at the specified `index` with a new item or nested section.
+  ```typescript
+  mySection.replace(0, "Replaced first item");
+  ```
+
+- **`remove(index: number): Section<T>`**
+  Removes the item at the specified `index` from the item list.
+  ```typescript
+  mySection.remove(0); // Removes the first item
+  ```
+
+These methods return the `Section` instance itself, allowing for fluent chaining of operations:
+
+```typescript
+mySection
+  .add("First item")
+  .prepend("Actually, this is first")
+  .insert(1, "This goes second")
+  .remove(2); // Removes "First item"
+```
+
 ### Customizing Format Options
 
 ```typescript

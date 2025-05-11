@@ -10,6 +10,7 @@ const mockCreateWeighted = jest.fn();
 // Use unstable_mockModule instead of jest.mock
 jest.unstable_mockModule('../../src/items/weighted', () => ({
     create: mockCreateWeighted,
+    DEFAULT_WEIGHTED_OPTIONS: { weight: 1, parameters: {} },
     __esModule: true
 }));
 
@@ -57,7 +58,7 @@ describe('instruction', () => {
         it('should call createWeighted with the provided text', () => {
             const text = 'Test instruction';
             create(text);
-            expect(mockCreateWeighted).toHaveBeenCalledWith(text);
+            expect(mockCreateWeighted).toHaveBeenCalledWith(text, { weight: 1, parameters: {} });
         });
 
         it('should return the result from createWeighted', () => {
