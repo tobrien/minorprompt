@@ -22,5 +22,5 @@ export type { Trait } from "./items/trait";
 export type { Weighted } from "./items/weighted";
 export type { Prompt } from "./prompt";
 export type { FormatOptions, SectionSeparator, SectionTitleProperty } from "./formatter";
-export type { Model } from "./chat";
-export type { Request } from "./chat";
+export type { Model, Request } from "./chat";
+export type { Logger } from "./logger";
