@@ -1,4 +1,3 @@
-import { FormatOptions, SectionSeparator } from "./formatter";
 
 export const LIBRARY_NAME = "minorprompt";
 

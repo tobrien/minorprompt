@@ -37,7 +37,8 @@ console.log('Number of instructions:', section.items.length);
 // Output: Number of instructions: 3
 
 // Formatting a Section using Tags
-const formattedTags = Formatter.format(section);
+const formatterTags = Formatter.create();
+const formattedTags = formatterTags.format(section);
 console.log(formattedTags);
 // Output: <Instructions>
 //         Answer in a concise manner
@@ -46,7 +47,8 @@ console.log(formattedTags);
 //         </Instructions>
 
 // Formatting a Section using Markdown
-const formattedMarkdown = Formatter.format(section, { sectionSeparator: "markdown" })
+const formatterMarkdown = Formatter.create({ formatOptions: { sectionSeparator: "markdown" }});
+const formattedMarkdown = formatterMarkdown.format(section)
 console.log(formattedMarkdown);
 // Output: # Instructions
 //
@@ -149,7 +151,8 @@ const parameters: Parameters = createParameters({
 const instructions: Section<Instruction> = createSection("Instructions", { parameters });
 instructions.add("Translate the following text to {{targetLanguage}}.");
 
-const formatted = Formatter.format(instructions);
+const formatter = Formatter.create({ formatOptions: { sectionSeparator: "markdown" }});
+const formatted = formatter.format(instructions);
 console.log(formatted);
 // Output: # Instructions
 //         Translate the following text to Spanish
@@ -237,7 +240,8 @@ mySection
   .insert(1, "This goes second")
   .remove(2); // Removes "First item"
 
-const formatted = Formatter.format( mySection, { sectionSeparator: "markdown" });
+const formatter = Formatter.create({ formatOptions: { sectionSeparator: "markdown" }})
+const formatted = formatter.format( mySection );
 console.log( formatted );
 // Output: # Example
 //
@@ -265,13 +269,14 @@ mySection
   .remove(2) // Removes "First item"
   .append( subSection );
 
-const formatted = Formatter.format( mySection, {
+const formatter = Formatter.create({ formatOptions: {
   areaSeparator: "markdown",
   sectionSeparator: "markdown",
   sectionIndentation: true,
   sectionTitlePrefix: "Topic",
   sectionTitleSeparator: " - "
-});
+}});
+const formatted = formatter.format( mySection);
 console.log( formatted );
 // Output: # Topic  -  Example
 //
