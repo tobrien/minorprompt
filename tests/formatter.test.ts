@@ -1,6 +1,6 @@
-import { DEFAULT_SECTION_SEPARATOR } from "../src/constants";
+import { DEFAULT_SECTION_SEPARATOR } from "../src/formatter";
 import { Model } from "../src/chat";
-import { format, formatArray, FormatOptions, formatPersona, formatPrompt, SectionSeparator, SectionTitleProperty } from "../src/formatter";
+import { create as createFormatter, FormatOptions, SectionSeparator, SectionTitleProperty } from "../src/formatter";
 import { Content } from "../src/items/content";
 import { Context } from "../src/items/context";
 import { Instruction } from "../src/items/instruction";
@@ -40,6 +40,8 @@ const minimalMockSection: Section<Weighted> = {
 
 describe("formatter", () => {
     const model: Model = "gpt-4o";
+    // Create formatter instance for tests
+    const formatter = createFormatter();
 
     describe("formatPersona", () => {
         it("should format persona correctly", () => {
@@ -56,12 +58,7 @@ describe("formatter", () => {
             persona.add(traitsSection);
             persona.add(instructionsSection);
 
-
-            const options: Partial<FormatOptions> = {
-                sectionDepth: 0
-            };
-
-            const result = formatPersona(model, persona, options);
+            const result = formatter.formatPersona(model, persona);
             expect(result.role).toBe("system");
             expect(result.content).toBe("<Persona>\n<Traits>\ntrait1\n\ntrait2\n</Traits>\n\n<Instructions>\ninstruction1\n\ninstruction2\n</Instructions>\n</Persona>");
         });
@@ -80,12 +77,15 @@ describe("formatter", () => {
             persona.add(traitsSection);
             persona.add(instructionsSection);
 
-            const options: Partial<FormatOptions> = {
-                sectionSeparator: "tag" as SectionSeparator,
-                sectionDepth: 0
-            };
+            // Create a custom formatter with tag separator
+            const customFormatter = createFormatter({
+                formatOptions: {
+                    sectionSeparator: "tag" as SectionSeparator,
+                    sectionDepth: 0
+                }
+            });
 
-            const result = formatPersona(model, persona, options);
+            const result = customFormatter.formatPersona(model, persona);
             expect(result.role).toBe("system");
             expect(result.content).toBe("<Persona>\n<Traits>\ntrait1\n\ntrait2\n</Traits>\n\n<Instructions>\ninstruction1\n\ninstruction2\n</Instructions>\n</Persona>");
         });
@@ -94,7 +94,7 @@ describe("formatter", () => {
     describe("format", () => {
         it("should format simple text correctly", () => {
             const text: Weighted = { text: "test text", weight: 1 };
-            const result = format(text);
+            const result = formatter.format(text);
             expect(result).toBe("test text");
         });
 
@@ -114,11 +114,15 @@ describe("formatter", () => {
                 // @ts-ignore
                 prepend: createMockFn(),
             };
-            const options: Partial<FormatOptions> = {
-                sectionSeparator: "tag" as SectionSeparator,
-            };
 
-            const result = format(section, options);
+            // Create formatter with tag separator
+            const tagFormatter = createFormatter({
+                formatOptions: {
+                    sectionSeparator: "tag" as SectionSeparator,
+                }
+            });
+
+            const result = tagFormatter.format(section);
             expect(result).toBe(`<Test Section>\nitem1\n\nitem2\n</Test Section>`);
         });
 
@@ -138,12 +142,16 @@ describe("formatter", () => {
                 // @ts-ignore
                 prepend: createMockFn(),
             };
-            const options: Partial<FormatOptions> = {
-                sectionSeparator: "markdown" as SectionSeparator,
-            };
 
-            const result = format(section, options);
-            expect(result).toBe(`# Test Section\n\nitem1\n\nitem2`);
+            // Create formatter with markdown separator
+            const markdownFormatter = createFormatter({
+                formatOptions: {
+                    sectionSeparator: "markdown" as SectionSeparator,
+                }
+            });
+
+            const result = markdownFormatter.format(section, 1);
+            expect(result).toBe(`## Test Section\n\nitem1\n\nitem2`);
         });
 
         it("should format section with different sectionTitleProperty", () => {
@@ -159,12 +167,15 @@ describe("formatter", () => {
                 add: (item: any) => section
             } as unknown as Section<Weighted>;
 
-            const options: Partial<FormatOptions> = {
-                sectionSeparator: "tag" as SectionSeparator,
-                sectionTitleProperty: "name" as SectionTitleProperty,
-            };
+            // Create formatter with custom title property
+            const customFormatter = createFormatter({
+                formatOptions: {
+                    sectionSeparator: "tag" as SectionSeparator,
+                    sectionTitleProperty: "name" as SectionTitleProperty,
+                }
+            });
 
-            const result = format(section, options);
+            const result = customFormatter.format(section);
             expect(result).toBe(`<Test Section>\nitem1\n\nitem2\n</Test Section>`);
         });
 
@@ -183,12 +194,16 @@ describe("formatter", () => {
                 // @ts-ignore
                 prepend: createMockFn(),
             };
-            const options: Partial<FormatOptions> = {
-                sectionSeparator: "tag" as SectionSeparator,
-                sectionIndentation: true,
-            };
 
-            const result = format(section, options);
+            // Create formatter with custom indentation
+            const indentationFormatter = createFormatter({
+                formatOptions: {
+                    sectionSeparator: "tag" as SectionSeparator,
+                    sectionIndentation: true,
+                }
+            });
+
+            const result = indentationFormatter.format(section);
             expect(result).toBe(`<Test Section>\nitem1\n\nitem2\n</Test Section>`);
         });
 
@@ -207,15 +222,19 @@ describe("formatter", () => {
                 // @ts-ignore
                 prepend: createMockFn(),
             };
-            const options: Partial<FormatOptions> = {
-                sectionSeparator: "markdown" as SectionSeparator,
-                sectionTitlePrefix: "Category",
-                sectionTitleSeparator: "-",
-                sectionDepth: 3
-            };
 
-            const result = format(section, options);
-            expect(result).toBe(`#### Category - Test Section\n\nitem1\n\nitem2`);
+            // Create formatter with custom title prefix and separator
+            const customFormatter = createFormatter({
+                formatOptions: {
+                    sectionSeparator: "markdown" as SectionSeparator,
+                    sectionTitlePrefix: "Category",
+                    sectionTitleSeparator: "-",
+                    sectionDepth: 0
+                }
+            });
+
+            const result = customFormatter.format(section);
+            expect(result).toBe(`# Category - Test Section\n\nitem1\n\nitem2`);
         });
     });
 
@@ -226,14 +245,14 @@ describe("formatter", () => {
                 { text: "item2", weight: 1 }
             ];
 
-            const result = formatArray(items);
+            const result = formatter.formatArray(items);
             expect(result).toBe("item1\n\nitem2");
         });
 
         it("should handle empty arrays", () => {
             const items: Weighted[] = [];
 
-            const result = formatArray(items);
+            const result = formatter.formatArray(items);
             expect(result).toBe("");
         });
 
@@ -242,7 +261,7 @@ describe("formatter", () => {
                 { text: "content1", weight: 1 },
                 { text: "content2", weight: 1 }
             ];
-            const result = formatArray(items);
+            const result = formatter.formatArray(items);
             expect(result).toBe("content1\n\ncontent2");
         });
 
@@ -251,7 +270,7 @@ describe("formatter", () => {
                 { text: "instruction1", weight: 1 },
                 { text: "instruction2", weight: 1 }
             ];
-            const result = formatArray(items);
+            const result = formatter.formatArray(items);
             expect(result).toBe("instruction1\n\ninstruction2");
         });
 
@@ -260,7 +279,7 @@ describe("formatter", () => {
                 { text: "context1", weight: 1 },
                 { text: "context2", weight: 1 }
             ];
-            const result = formatArray(items);
+            const result = formatter.formatArray(items);
             expect(result).toBe("context1\n\ncontext2");
         });
 
@@ -269,71 +288,16 @@ describe("formatter", () => {
                 { text: "item1", weight: 1 },
                 { text: "item2", weight: 1 }
             ];
-            const options: Partial<FormatOptions> = {
-                sectionSeparator: "tag" as SectionSeparator,
-            };
 
-            const result = formatArray(items, options);
+            // Create formatter with tag separator
+            const tagFormatter = createFormatter({
+                formatOptions: {
+                    sectionSeparator: "tag" as SectionSeparator,
+                }
+            });
+
+            const result = tagFormatter.formatArray(items);
             expect(result).toBe("item1\n\nitem2");
-        });
-    });
-
-    // Add tests for formatArea
-    describe("formatArea", () => {
-        it("should format area with tag separator", () => {
-            const items: Weighted[] = [
-                { text: "item1", weight: 1 },
-                { text: "item2", weight: 1 }
-            ];
-            const options: Partial<FormatOptions> = {
-                sectionSeparator: "tag" as SectionSeparator,
-            };
-
-            // We need to make formatArea accessible for testing
-            // Temporarily add it to the exports or access it using a workaround
-            // const formatAreaMethod = (formatter as any).formatArea;
-
-            // Create a prototype of the formatArea function for testing
-            function formatArea<T extends Weighted>(items: (T | Section<T>)[], title: string, options: Partial<FormatOptions>): string {
-                const sectionSeparator = options.sectionSeparator ?? DEFAULT_SECTION_SEPARATOR;
-
-                const formattedItems = formatArray(items, options);
-
-                if (sectionSeparator === "tag") {
-                    return `<${title.toLowerCase()}>\n${formattedItems}\n</${title.toLowerCase()}>`;
-                } else {
-                    return `#### ${title}\n\n${formattedItems}`;
-                }
-            }
-
-            const result = formatArea(items, "Instructions", options);
-            expect(result).toBe(`<instructions>\nitem1\n\nitem2\n</instructions>`);
-        });
-
-        it("should format area with markdown separator", () => {
-            const items: Weighted[] = [
-                { text: "item1", weight: 1 },
-                { text: "item2", weight: 1 }
-            ];
-            const options: Partial<FormatOptions> = {
-                sectionSeparator: "markdown" as SectionSeparator,
-            };
-
-            // Create a prototype of the formatArea function for testing
-            function formatArea<T extends Weighted>(items: (T | Section<T>)[], title: string, options: Partial<FormatOptions>): string {
-                const areaSeparator = options.sectionSeparator ?? DEFAULT_SECTION_SEPARATOR;
-
-                const formattedItems = formatArray(items, options);
-
-                if (areaSeparator === "tag") {
-                    return `<${title.toLowerCase()}>\n${formattedItems}\n</${title.toLowerCase()}>`;
-                } else {
-                    return `#### ${title}\n\n${formattedItems}`;
-                }
-            }
-
-            const result = formatArea(items, "Instructions", options);
-            expect(result).toBe(`#### Instructions\n\nitem1\n\nitem2`);
         });
     });
 
@@ -361,10 +325,7 @@ describe("formatter", () => {
 
             const prompt = createPrompt(persona, instructions, contents, contexts);
 
-            // Import formatPrompt
-            // const { formatPrompt } = require("../src/formatter");
-
-            const result = formatPrompt(model, prompt);
+            const result = formatter.formatPrompt(model, prompt);
             expect(result.model).toBe("gpt-4o");
             expect(result.messages.length).toBe(2);
             expect(result.messages[0].role).toBe("system");
