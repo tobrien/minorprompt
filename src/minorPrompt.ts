@@ -12,6 +12,7 @@ export * as Formatter from "./formatter";
 export * as Parser from "./parser";
 export * as Chat from "./chat";
 export * as Loader from "./loader";
+export * as Override from "./override";
 
 // Export types
 export type { Content } from "./items/content";
