@@ -21,7 +21,7 @@
         "start": "dist/main.js",
         "dev": "vite",
         "watch": "vite build --watch",
-        "test": "NODE_OPTIONS=--experimental-vm-modules jest && pnpm run test:readme",
+        "test": "NODE_OPTIONS=--experimental-vm-modules jest --coverage && pnpm run test:readme",
         "test:readme": "markdown-doctest -c .markdown-doctest-setup.mjs README.md",
         "lint": "eslint . --ext .ts",
         "lint:fix": "eslint . --ext .ts --fix",
@@ -65,6 +65,7 @@
         "vite-plugin-node": "^5.0.1"
     },
     "dependencies": {
+        "glob": "^11.0.2",
         "marked": "^15.0.11"
     }
 }

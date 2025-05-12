@@ -11,6 +11,7 @@ export { create as createParameters } from "./items/parameters";
 export * as Formatter from "./formatter";
 export * as Parser from "./parser";
 export * as Chat from "./chat";
+export * as Loader from "./loader";
 
 // Export types
 export type { Content } from "./items/content";
