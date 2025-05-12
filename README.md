@@ -22,36 +22,39 @@ npm install @tobrien/minorprompt
 
 ## Basic Usage
 
-```typescript
-import { MinorPrompt, Formatter } from '@tobrien/minorprompt';
+```js
+import { createSection, createPrompt, Formatter, Section, Instruction } from '@tobrien/minorprompt';
 
 // Create a new prompt
-const prompt = MinorPrompt.create();
+const section: Section<Instruction> = createSection<Instruction>("Instructions");
 
 // Add instructions
-prompt.addInstruction("Answer in a concise manner");
-prompt.addInstruction("Provide code examples when appropriate");
+section.add("Answer in a concise manner");
+section.add("Provide code examples when appropriate");
 
-// Add content (what the LLM should respond to)
-prompt.addContent("Explain how promises work in JavaScript");
+// Verify parts of the output
+console.log('Number of instructions:', section.items.length);
+// Output: Number of instructions: 3
 
-// Add context (background information)
-prompt.addContext("This is for a beginner JavaScript tutorial");
+// Formatting a Section using Tags
+const formattedTags = Formatter.format(section);
+console.log(formattedTags);
+// Output: <Instructions>
+//         Answer in a concise manner
+//
+//         Provide code examples when appropriate
+//         </Instructions>
 
-// Create a persona
-const teacher = MinorPrompt.createPersona("Teacher");
-teacher.addTrait("You are a teacher who explains technical concepts in simple terms");
-teacher.addTrait("You have 10+ years of experience teaching programming languages");
-teacher.addInstruction("Explain concepts using simple analogies");
+// Formatting a Section using Markdown
+const formattedMarkdown = Formatter.format(section, { sectionSeparator: "markdown" })
+console.log(formattedMarkdown);
+// Output: # Instructions
+//
+//         Answer in a concise manner
+//
+//         Provide code examples when appropriate
 
-// Add the persona to the prompt
-prompt.addPersona(teacher);
 
-// Format the prompt for a specific model
-const formatter = Formatter.create("gpt-4o");
-const chatRequest = formatter.format(prompt);
-
-// Use the formatted chat request with your LLM API
 ```
 
 ## Core Concepts
@@ -92,15 +95,20 @@ Groups related items together:
 
 ### Creating Sections
 
-```typescript
-// Create a section for coding best practices
-const bestPractices = MinorPrompt.createSection<MinorPrompt.Instruction>("Best Practices");
-bestPractices.add("Follow DRY (Don't Repeat Yourself) principles");
-bestPractices.add("Write readable code with clear variable names");
-bestPractices.add("Add comments for complex logic");
+```js
+import { createSection, Formatter, Section, Instruction } from '@tobrien/minorprompt';
 
-// Add the section to the prompt
-prompt.addInstruction(bestPractices);
+// Create a section for coding best practices
+const instructions: Section<Instruction> = createSection<Instruction>("Instructions");
+instructions.add("Follow DRY (Don't Repeat Yourself) principles");
+instructions.add("Write readable code with clear variable names");
+instructions.add("Add comments for complex logic");
+
+const writerPersona: Section<Instruction> = createSection<Instruction>("Writer Persona");
+writerPersona.add("You are an amazingly talented writer who is awesome.");
+
+const literatureContext: Section<Context> = createSection<Context>("Literature Context");
+literatureContext.add("Here is the full text of a really long book.");
 ```
 
 ### Setting Section and Item Weights
@@ -109,9 +117,11 @@ MinorPrompt allows you to assign weights to sections and individual items within
 
 You can define `weight` for the section itself and a default `itemWeight` for items added to that section using `SectionOptions`. Additionally, `parameters` can be defined at the section level and will be passed down to items added to that section.
 
-```typescript
+```js
+import { createSection, Formatter, Section, Instruction } from '@tobrien/minorprompt';
+
 // Create a section with specific weights and parameters
-const weightedSection = MinorPrompt.createSection<MinorPrompt.Instruction>("Weighted Topics", {
+const weightedSection: Section<Instruction> = createSection<Instruction>("Weighted Topics", {
   weight: 10, // Weight for the entire section
   itemWeight: 5, // Default weight for items in this section
   parameters: { topic: "advanced" } // Parameters passed to items
@@ -121,8 +131,6 @@ const weightedSection = MinorPrompt.createSection<MinorPrompt.Instruction>("Weig
 // unless overridden individually.
 weightedSection.add("Discuss {{topic}} caching strategies");
 weightedSection.add("Explain {{topic}} database indexing", { weight: 7 }); // Override itemWeight
-
-prompt.addInstruction(weightedSection);
 ```
 
 ### Using Parameters for Customization
@@ -131,36 +139,21 @@ MinorPrompt supports dynamic content in your prompts through the use of paramete
 
 Parameters can be passed when creating a prompt, a persona, or a section. They can also be supplied directly when adding individual items like instructions, content, or context if those items are strings with placeholders.
 
-```typescript
-// Define a prompt with a placeholder
-const dynamicPrompt = MinorPrompt.create();
-dynamicPrompt.addInstruction("Translate the following text to {{targetLanguage}}.");
-dynamicPrompt.addContent("Hello, world!");
+```js
+import { createSection, createParameters, Formatter, Section, Instruction } from '@tobrien/minorprompt';
 
-// Format the prompt, providing parameters
-const formatter = Formatter.create("gpt-4o");
-const chatRequestWithParams = formatter.format(dynamicPrompt, {
-  targetLanguage: "Spanish"
-});
+const parameters: Parameters = createParameters({
+  "targetLanguage": "Spanish",
+})
 
-// The instruction in chatRequestWithParams.messages will be:
-// "Translate the following text to Spanish."
+const instructions: Section<Instruction> = createSection("Instructions", { parameters });
+instructions.add("Translate the following text to {{targetLanguage}}.");
 
-// Example with section-level parameters (as shown in the previous section)
-const sectionWithParams = MinorPrompt.createSection("Inquiry", {
-    parameters: { subject: "history" }
-});
-sectionWithParams.add("Tell me about the {{subject}} of ancient Rome.");
-dynamicPrompt.addContent(sectionWithParams);
-
-const chatRequestWithSectionParams = formatter.format(dynamicPrompt, {
-    targetLanguage: "French" // Parameters can be combined
-});
-
-// In chatRequestWithSectionParams, the content section will be:
-// "Tell me about the history of ancient Rome."
-// And the instruction will be:
-// "Translate the following text to French."
+const formatted = Formatter.format(instructions);
+console.log(formatted);
+// Output: # Instructions
+//         Translate the following text to Spanish
+//
 ```
 
 ### Parsing Markdown for Section Creation
@@ -197,7 +190,7 @@ The `Section` interface provides the following methods for item manipulation:
   Appends a new item or a nested section to the end of the section's item list. If a string is provided, it's typically converted into an appropriate `WeightedText` object (e.g., `Instruction`, `ContentText`).
   ```typescript
   mySection.add("New item at the end");
-  const nestedSection = MinorPrompt.createSection("Nested");
+  const nestedSection = createSection("Nested");
   mySection.add(nestedSection);
   ```
 
@@ -233,25 +226,64 @@ The `Section` interface provides the following methods for item manipulation:
 
 These methods return the `Section` instance itself, allowing for fluent chaining of operations:
 
-```typescript
+```js
+import { createSection, Formatter, Section, Instruction } from '@tobrien/minorprompt';
+
+const mySection: Section<Instruction> = createSection("Example");
+
 mySection
   .add("First item")
   .prepend("Actually, this is first")
   .insert(1, "This goes second")
   .remove(2); // Removes "First item"
+
+const formatted = Formatter.format( mySection, { sectionSeparator: "markdown" });
+console.log( formatted );
+// Output: # Example
+//
+//         Actually, this is first
+//
+//         This goes second
 ```
 
 ### Customizing Format Options
 
-```typescript
-// Create a formatter with custom formatting options
-const formatter = Formatter.create("gpt-4o", {
+```js
+import { createSection, Formatter, Section, Instruction } from '@tobrien/minorprompt';
+
+const mySection: Section<Instruction> = createSection("Example");
+const subSection: Section<Instruction> = createSection("Standards");
+
+subSection
+  .add("This is a Subsection Instruction")
+  .add("And This is the Last Instruction");
+
+mySection
+  .add("First item")
+  .prepend("Actually, this is first")
+  .insert(1, "This goes second")
+  .remove(2) // Removes "First item"
+  .append( subSection );
+
+const formatted = Formatter.format( mySection, {
   areaSeparator: "markdown",
   sectionSeparator: "markdown",
   sectionIndentation: true,
   sectionTitlePrefix: "Topic",
   sectionTitleSeparator: " - "
 });
+console.log( formatted );
+// Output: # Topic  -  Example
+//
+//         Actually, this is first
+//
+//         This goes second
+//
+//         ## Topic  -  Standards
+//
+//         This is a Subsection Instruction
+//
+//         And This is the Last Instruction
 ```
 
 MinorPrompt supports various formatting styles to organize your prompt elements:

@@ -23,9 +23,17 @@ function isSection<T extends Weighted>(obj: T | Section<T>): obj is Section<T> {
     return obj && typeof obj === 'object' && 'items' in obj && Array.isArray((obj as Section<T>).items);
 }
 
-export const formatPersona = (model: Model, persona: Section<Instruction>, options: Partial<FormatOptions> = DEFAULT_FORMAT_OPTIONS): Message => {
+export const formatPersona = (model: Model, persona: Section<Instruction>, options?: Partial<FormatOptions>): Message => {
 
-    const formattedPersona = formatSection(persona, options);
+    let formatOptions: FormatOptions = DEFAULT_FORMAT_OPTIONS;
+    if (options) {
+        formatOptions = {
+            ...formatOptions,
+            ...options,
+        };
+    }
+
+    const formattedPersona = formatSection(persona, formatOptions);
 
     return {
         role: getPersonaRole(model),
@@ -35,13 +43,16 @@ export const formatPersona = (model: Model, persona: Section<Instruction>, optio
 
 export const format = <T extends Weighted>(
     weightedText: T | Section<T>,
-    options: Partial<FormatOptions> = DEFAULT_FORMAT_OPTIONS
+    options?: Partial<FormatOptions>
 ): string => {
 
-    const formatOptions: FormatOptions = {
-        ...DEFAULT_FORMAT_OPTIONS,
-        ...options,
-    };
+    let formatOptions: FormatOptions = DEFAULT_FORMAT_OPTIONS;
+    if (options) {
+        formatOptions = {
+            ...formatOptions,
+            ...options,
+        };
+    }
 
     let result: string = "";
     if (isSection(weightedText)) {
@@ -53,11 +64,14 @@ export const format = <T extends Weighted>(
     return result;
 }
 
-export const formatSection = <T extends Weighted>(section: Section<T>, options: Partial<FormatOptions> = DEFAULT_FORMAT_OPTIONS): string => {
-    const formatOptions: FormatOptions = {
-        ...DEFAULT_FORMAT_OPTIONS,
-        ...options,
-    };
+export const formatSection = <T extends Weighted>(section: Section<T>, options?: Partial<FormatOptions>): string => {
+    let formatOptions: FormatOptions = DEFAULT_FORMAT_OPTIONS;
+    if (options) {
+        formatOptions = {
+            ...formatOptions,
+            ...options,
+        };
+    }
 
     const formattedItems = section.items.map(item => format(item, { ...formatOptions, sectionDepth: formatOptions.sectionDepth + 1 })).join("\n\n");
 
@@ -74,23 +88,27 @@ export const formatSection = <T extends Weighted>(section: Section<T>, options: 
 // Helper function to format arrays of items or sections
 export const formatArray = <T extends Weighted>(
     items: (T | Section<T>)[],
-    options: Partial<FormatOptions> = DEFAULT_FORMAT_OPTIONS
+    options?: Partial<FormatOptions>
 ): string => {
-
-    const formatOptions: FormatOptions = {
-        ...DEFAULT_FORMAT_OPTIONS,
-        ...options,
-    };
+    let formatOptions: FormatOptions = DEFAULT_FORMAT_OPTIONS;
+    if (options) {
+        formatOptions = {
+            ...formatOptions,
+            ...options,
+        };
+    }
 
     return items.map(item => format(item, formatOptions)).join("\n\n");
 }
 
-export const formatPrompt = (model: Model, prompt: Prompt, options: Partial<FormatOptions> = DEFAULT_FORMAT_OPTIONS): Chat.Request => {
-
-    const formatOptions: FormatOptions = {
-        ...DEFAULT_FORMAT_OPTIONS,
-        ...options,
-    };
+export const formatPrompt = (model: Model, prompt: Prompt, options?: Partial<FormatOptions>): Chat.Request => {
+    let formatOptions: FormatOptions = DEFAULT_FORMAT_OPTIONS;
+    if (options) {
+        formatOptions = {
+            ...formatOptions,
+            ...options,
+        };
+    }
 
     const chatRequest: Chat.Request = Chat.createRequest(model);
 
