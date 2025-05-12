@@ -17,7 +17,8 @@ describe('Markdown Parser Integration Test', () => {
         const parsedJson = JSON.parse(parsedJsonString);
         const parsedSection = convertToSection(parsedJson);
 
-        const formattedSection = Formatter.formatSection(parsedSection, options);
+        const formatter = Formatter.create({ formatOptions: options });
+        const formattedSection = formatter.format(parsedSection);
 
         const expectedString = await fs.readFile(expectedFilePath, 'utf-8');
 

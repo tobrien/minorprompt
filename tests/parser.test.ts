@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { parseFile } from '../src/parser';
+import { create } from '../src/parser';
 
 // Setup mocks before importing the module
 const mockReadFile = jest.fn<(path: string, encoding: string) => Promise<string>>();
@@ -18,15 +18,17 @@ jest.unstable_mockModule('marked', () => ({
 }));
 
 // Import the module after setting up mocks
-describe('parseFile', () => {
+describe('parser', () => {
+    let parser: any;
     let parseFile: (filePath: string) => Promise<any>;
     let parse: (markdownContent: string) => any;
 
     beforeEach(async () => {
         // Import the module dynamically to ensure mocks are applied
         const parserModule = await import('../src/parser');
-        parseFile = parserModule.parseFile;
-        parse = parserModule.parse;
+        parser = parserModule.create();
+        parseFile = parser.parseFile;
+        parse = parser.parse;
 
         // Reset mocks
         jest.clearAllMocks();
