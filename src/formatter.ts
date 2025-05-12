@@ -49,6 +49,12 @@ function isSection<T extends Weighted>(obj: T | Section<T>): obj is Section<T> {
     return obj && typeof obj === 'object' && 'items' in obj && Array.isArray((obj as Section<T>).items);
 }
 
+// Type guard to check if an object is a Section
+function isWeighted<T extends Weighted>(obj: T | Section<T>): obj is T {
+    return obj && typeof obj === 'object' && 'text' in obj;
+}
+
+
 export const create = (options?: Options): Instance => {
     const logger = wrapLogger(options?.logger || DEFAULT_LOGGER);
 
@@ -71,19 +77,21 @@ export const create = (options?: Options): Instance => {
     }
 
     const format = <T extends Weighted>(
-        weightedText: T | Section<T>,
+        item: T | Section<T>,
         sectionDepth?: number,
     ): string => {
-        logger.debug(`Formatting ${isSection(weightedText) ? "section" : "item"}`);
+        logger.debug(`Formatting ${isSection(item) ? "section" : "item"} Item: %s`, JSON.stringify(item));
         const currentSectionDepth: number = sectionDepth ? sectionDepth : formatOptions.sectionDepth;
         logger.debug(`\fCurrent section depth: ${currentSectionDepth}`);
 
         let result: string = "";
-        if (isSection(weightedText)) {
-            result = formatSection(weightedText, currentSectionDepth + 1);
-        } else {
-            const item = weightedText;
+        if (isSection(item)) {
+            result = formatSection(item, currentSectionDepth + 1);
+        } else if (isWeighted(item)) {
             result = item.text;
+        } else {
+            //If the item is neither a section nor a weighted item, it is empty.
+            result = '';
         }
         return result;
     }

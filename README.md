@@ -181,7 +181,53 @@ Details about the second sub-topic.
 
 Could be parsed into a main section titled "Main Topic" containing text and two sub-sections: "Sub-Topic 1" (which itself contains a nested section "Sub-Sub-Topic A") and "Sub-Topic 2". The content under each header would become items within the respective sections.
 
-_(Note: The specific API for initiating Markdown parsing, e.g., `MinorPrompt.fromMarkdown(markdownString)`, would be detailed in the API documentation or further examples.)_
+```js
+import { Parser, Formatter } from '@tobrien/minorprompt';
+
+// Markdown content with sections
+const markdownContent = `
+# Instructions
+Follow these guidelines when writing code.
+
+## Best Practices
+- Keep functions small and focused
+- Use meaningful variable names
+
+## Documentation
+- Comment complex logic
+- Document public APIs thoroughly
+`;
+
+// Parse the Markdown into a Section structure
+const parser = Parser.create();
+
+const parsedSection = parser.parse(markdownContent);
+
+// Now you can manipulate the parsed sections
+const bestPracticesSection = parsedSection.items[1]; // Accessing the "Best Practices" section
+bestPracticesSection.add("- Write tests for your code");
+
+// Format the resulting section structure
+const formatter = Formatter.create();
+const formattedPrompt = formatter.format(parsedSection);
+console.log(formattedPrompt);
+/* Output:
+<Instructions>
+Follow these guidelines when writing code.
+
+<section title="Best Practices">
+- Keep functions small and focused
+- Use meaningful variable names
+- Write tests for your code
+</section>
+
+<section title="Documentation">
+- Comment complex logic
+- Document public APIs thoroughly
+</section>
+</Instructions>
+*/
+```
 
 ### Manipulating Section Contents
 
@@ -249,47 +295,19 @@ console.log( formatted );
 //
 //         This goes second
 ```
+### Using the Loader for File-Based Prompts
+
+MinorPrompt provides a Loader utility that allows you to load prompt templates from external files. This is particularly useful when you want to:
+
+- Store complex prompts as separate files
+- Share prompt templates across different parts of your application
+- Keep your prompt content separate from your application code
+
+The Loader supports various file formats and can automatically parse the content into the appropriate Section structures.
+
+The Loader works seamlessly with the Parser to convert structured content into MinorPrompt's internal representation, allowing you to focus on writing clear prompts rather than managing their implementation details.
 
 ### Customizing Format Options
-
-```js
-import { createSection, Formatter, Section, Instruction } from '@tobrien/minorprompt';
-
-const mySection: Section<Instruction> = createSection("Example");
-const subSection: Section<Instruction> = createSection("Standards");
-
-subSection
-  .add("This is a Subsection Instruction")
-  .add("And This is the Last Instruction");
-
-mySection
-  .add("First item")
-  .prepend("Actually, this is first")
-  .insert(1, "This goes second")
-  .remove(2) // Removes "First item"
-  .append( subSection );
-
-const formatter = Formatter.create({ formatOptions: {
-  areaSeparator: "markdown",
-  sectionSeparator: "markdown",
-  sectionIndentation: true,
-  sectionTitlePrefix: "Topic",
-  sectionTitleSeparator: " - "
-}});
-const formatted = formatter.format( mySection);
-console.log( formatted );
-// Output: # Topic  -  Example
-//
-//         Actually, this is first
-//
-//         This goes second
-//
-//         ## Topic  -  Standards
-//
-//         This is a Subsection Instruction
-//
-//         And This is the Last Instruction
-```
 
 MinorPrompt supports various formatting styles to organize your prompt elements:
 
@@ -361,6 +379,9 @@ Different LLM providers have different recommendations for prompt formatting:
 The field of prompt engineering is rapidly evolving, with new research and best practices emerging regularly. MinorPrompt's flexible formatting system allows you to adapt to these changes without rewriting your prompts entirely.
 
 By separating the structure of your prompt (instructions, context, content) from its formatting, MinorPrompt makes it easier to experiment with different formatting approaches to find what works best for your specific use case and model.
+
+
+
 
 ## Model Support
 
