@@ -1,11 +1,6 @@
-import { describe, expect, test, jest } from '@jest/globals';
-import type { Prompt } from '../src/prompt';
-import type { Section } from '../src/items/section';
-import type { Instruction } from '../src/items/instruction';
-import type { Content } from '../src/items/content';
-import type { Context } from '../src/items/context';
-import type { Weighted } from '../src/items/weighted';
+import { describe, expect, jest, test } from '@jest/globals';
 import { createPrompt, createSection } from 'minorPrompt';
+import type { Weighted } from '../src/items/weighted';
 
 // Create mock functions for create operations
 const mockCreateInstruction = jest.fn((text) => ({ text, weight: 1 }));
@@ -42,12 +37,12 @@ describe('Prompt', () => {
         const contents = createSection('Contents');
         const contexts = createSection('Contexts');
 
-        const prompt = createPrompt(persona, instructions, contents, contexts);
+        const prompt = createPrompt({ persona, instructions, contents, contexts });
 
-        expect(prompt.persona.items).toEqual([]);
+        expect(prompt.persona?.items).toEqual([]);
         expect(prompt.instructions.items).toEqual([]);
-        expect(prompt.contents.items).toEqual([]);
-        expect(prompt.contexts.items).toEqual([]);
+        expect(prompt.contents?.items).toEqual([]);
+        expect(prompt.contexts?.items).toEqual([]);
     });
 
     test('should add an instruction from a string', async () => {
@@ -56,7 +51,7 @@ describe('Prompt', () => {
         const contents = createSection('Contents');
         const contexts = createSection('Contexts');
 
-        const prompt = createPrompt(persona, instructions, contents, contexts);
+        const prompt = createPrompt({ persona, instructions, contents, contexts });
         const instructionText = 'Test instruction';
 
         instructions.add(instructionText);
@@ -72,7 +67,7 @@ describe('Prompt', () => {
         const contents = createSection('Contents');
         const contexts = createSection('Contexts');
 
-        const prompt = createPrompt(persona, instructions, contents, contexts);
+        const prompt = createPrompt({ persona, instructions, contents, contexts });
         const instruction = { text: 'Test instruction', weight: 1 };
 
         instructions.add(instruction);
@@ -87,7 +82,7 @@ describe('Prompt', () => {
         const contents = createSection('Contents');
         const contexts = createSection('Contexts');
 
-        const prompt = createPrompt(persona, instructions, contents, contexts);
+        const prompt = createPrompt({ persona, instructions, contents, contexts });
         const section = create('Test Section');
 
         instructions.add(section);
@@ -101,14 +96,14 @@ describe('Prompt', () => {
         const contents = createSection('Contents');
         const contexts = createSection('Contexts');
 
-        const prompt = createPrompt(persona, instructions, contents, contexts);
+        const prompt = createPrompt({ persona, instructions, contents, contexts });
         const contentText = 'Test content';
 
         contents.add(contentText);
 
         // Check that the mock create function was called
-        expect(prompt.contents.items.length).toBe(1);
-        expect((prompt.contents.items[0] as Weighted).text).toBe(contentText);
+        expect(prompt.contents?.items.length).toBe(1);
+        expect((prompt.contents?.items[0] as Weighted).text).toBe(contentText);
     });
 
     test('should add content object', async () => {
@@ -117,12 +112,12 @@ describe('Prompt', () => {
         const contents = createSection('Contents');
         const contexts = createSection('Contexts');
 
-        const prompt = createPrompt(persona, instructions, contents, contexts);
+        const prompt = createPrompt({ persona, instructions, contents, contexts });
         const content = { text: 'Test content', weight: 1 };
 
         contents.add(content);
 
-        expect(prompt.contents.items).toContain(content);
+        expect(prompt.contents?.items).toContain(content);
     });
 
     test('should add content section', async () => {
@@ -132,12 +127,12 @@ describe('Prompt', () => {
         const contents = createSection('Contents');
         const contexts = createSection('Contexts');
 
-        const prompt = createPrompt(persona, instructions, contents, contexts);
+        const prompt = createPrompt({ persona, instructions, contents, contexts });
         const section = create('Test Section');
 
         contents.add(section);
 
-        expect(prompt.contents.items).toContain(section);
+        expect(prompt.contents?.items).toContain(section);
     });
 
     test('should add context from a string', async () => {
@@ -146,14 +141,14 @@ describe('Prompt', () => {
         const contents = createSection('Contents');
         const contexts = createSection('Contexts');
 
-        const prompt = createPrompt(persona, instructions, contents, contexts);
+        const prompt = createPrompt({ persona, instructions, contents, contexts });
         const contextText = 'Test context';
 
         contexts.add(contextText);
 
         // Check that the mock create function was called
-        expect(prompt.contexts.items.length).toBe(1);
-        expect((prompt.contexts.items[0] as Weighted).text).toBe(contextText);
+        expect(prompt.contexts?.items.length).toBe(1);
+        expect((prompt.contexts?.items[0] as Weighted).text).toBe(contextText);
     });
 
     test('should add context object', async () => {
@@ -162,12 +157,12 @@ describe('Prompt', () => {
         const contents = createSection('Contents');
         const contexts = createSection('Contexts');
 
-        const prompt = createPrompt(persona, instructions, contents, contexts);
+        const prompt = createPrompt({ persona, instructions, contents, contexts });
         const context = { text: 'Test context', weight: 1 };
 
         contexts.add(context);
 
-        expect(prompt.contexts.items).toContain(context);
+        expect(prompt.contexts?.items).toContain(context);
     });
 
     test('should add context section', async () => {
@@ -177,11 +172,11 @@ describe('Prompt', () => {
         const contents = createSection('Contents');
         const contexts = createSection('Contexts');
 
-        const prompt = createPrompt(persona, instructions, contents, contexts);
+        const prompt = createPrompt({ persona, instructions, contents, contexts });
         const section = create('Test Section');
 
         contexts.add(section);
 
-        expect(prompt.contexts.items).toContain(section);
+        expect(prompt.contexts?.items).toContain(section);
     });
 });
