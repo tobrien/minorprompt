@@ -2,14 +2,15 @@
  * @jest-environment node
  */
 import { jest, describe, expect, it, beforeEach } from '@jest/globals';
-import type { Content } from '../../src/items/content';
+import type { Content } from '@/items/content';
 
 // Create a mock function for createWeighted
 const mockCreateWeighted = jest.fn();
 
 // Use unstable_mockModule instead of jest.mock
-jest.unstable_mockModule('../../src/items/weighted', () => ({
+jest.unstable_mockModule('@/items/weighted', () => ({
     create: mockCreateWeighted,
+    DEFAULT_WEIGHTED_OPTIONS: { weight: 1, parameters: {} },
     __esModule: true
 }));
 
@@ -24,7 +25,7 @@ describe('content', () => {
         mockCreateWeighted.mockImplementation((text) => ({ text }));
 
         // Import the module under test dynamically after mocking
-        const contentModule = await import('../../src/items/content');
+        const contentModule = await import('@/items/content');
         create = contentModule.create;
     });
 
@@ -65,7 +66,7 @@ describe('content', () => {
 
             // Assert
             expect(mockCreateWeighted).toHaveBeenCalledTimes(1);
-            expect(mockCreateWeighted).toHaveBeenCalledWith(text);
+            expect(mockCreateWeighted).toHaveBeenCalledWith(text, { weight: 1, parameters: {} });
             expect(result).toBe(expectedResult); // Check if it returns the object from the mock
         });
 
