@@ -1,14 +1,16 @@
-import { Formatter, Logger, Parser, Section, Weighted } from '@tobrien/minorprompt';
+import { Formatter, Logger, Parser, Section, Weighted } from './minorPrompt';
 import { DEFAULT_SECTION_OPTIONS, SectionOptions } from './items/section';
 import { DEFAULT_LOGGER, wrapLogger } from './logger';
 import path from 'path';
 import { clean } from './util/general';
 import * as Storage from './util/storage';
+import { Parameters } from './minorPrompt';
 
 export interface Options {
     logger?: Logger;
     configDir: string;
     overrides: boolean;
+    parameters?: Parameters;
 }
 
 export interface Instance {
@@ -18,9 +20,9 @@ export interface Instance {
 }
 
 export const create = (options: Options): Instance => {
-    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER);
+    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER, 'Override');
     const storage = Storage.create({ log: logger.debug });
-
+    const parameters = options?.parameters || {};
 
     const override = async <T extends Weighted>(
         overrideFile: string,
@@ -43,13 +45,13 @@ export const create = (options: Options): Instance => {
 
         if (await storage.exists(preFile)) {
             logger.debug('Found pre file %s', preFile);
-            const parser = Parser.create();
+            const parser = Parser.create({ parameters });
             response.prepend = await parser.parseFile<T>(preFile, currentSectionOptions);
         }
 
         if (await storage.exists(postFile)) {
             logger.debug('Found post file %s', postFile);
-            const parser = Parser.create();
+            const parser = Parser.create({ parameters });
             response.append = await parser.parseFile<T>(postFile, currentSectionOptions);
         }
 
@@ -57,7 +59,7 @@ export const create = (options: Options): Instance => {
             logger.debug('Found base file %s', baseFile);
             if (options.overrides) {
                 logger.warn('WARNING: Core directives are being overwritten by custom configuration');
-                const parser = Parser.create();
+                const parser = Parser.create({ parameters });
                 response.override = await parser.parseFile<T>(baseFile, currentSectionOptions);
             } else {
                 logger.error('ERROR: Core directives are being overwritten by custom configuration');

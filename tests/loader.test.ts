@@ -1,5 +1,5 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
-import { createSection, Section } from '@tobrien/minorprompt';
+import { createSection, Section } from '../src/minorPrompt';
 import path from 'path';
 import { DEFAULT_LOGGER } from '../src/logger';
 
@@ -318,4 +318,5 @@ describe('Loader', () => {
             expect(sections[0].items[1].title).toBe('File 1');
         });
     });
+
 });

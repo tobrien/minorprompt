@@ -323,7 +323,7 @@ describe("formatter", () => {
             persona.add(traitsSection);
             persona.add(personaInstructionsSection);
 
-            const prompt = createPrompt(persona, instructions, contents, contexts);
+            const prompt = createPrompt({ persona, instructions, contents, contexts });
 
             const result = formatter.formatPrompt(model, prompt);
             expect(result.model).toBe("gpt-4o");

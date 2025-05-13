@@ -56,7 +56,7 @@ function isWeighted<T extends Weighted>(obj: T | Section<T>): obj is T {
 
 
 export const create = (options?: Options): Instance => {
-    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER);
+    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER, 'Formatter');
 
     let formatOptions: FormatOptions = DEFAULT_FORMAT_OPTIONS;
     if (options?.formatOptions) {
@@ -68,11 +68,15 @@ export const create = (options?: Options): Instance => {
 
     const formatPersona = (model: Model, persona: Section<Instruction>): Message => {
         logger.debug(`Formatting persona`);
-        const formattedPersona = formatSection(persona);
+        if (persona) {
+            const formattedPersona = formatSection(persona);
 
-        return {
-            role: getPersonaRole(model),
-            content: `${formattedPersona}`,
+            return {
+                role: getPersonaRole(model),
+                content: `${formattedPersona}`,
+            }
+        } else {
+            throw new Error("Persona is required");
         }
     }
 
@@ -101,17 +105,21 @@ export const create = (options?: Options): Instance => {
         const currentSectionDepth: number = sectionDepth ? sectionDepth : formatOptions.sectionDepth;
         logger.debug(`\t\tCurrent section depth: ${currentSectionDepth}`);
 
-        const formattedItems = section.items.map(item => format(item, currentSectionDepth)).join("\n\n");
+        if (section) {
+            const formattedItems = section.items.map(item => format(item, currentSectionDepth)).join("\n\n");
 
-        if (formatOptions.sectionSeparator === "tag") {
-            return `<${section.title ?? "section"}>\n${formattedItems}\n</${section.title ?? "section"}>`;
+            if (formatOptions.sectionSeparator === "tag") {
+                return `<${section.title ?? "section"}>\n${formattedItems}\n</${section.title ?? "section"}>`;
+            } else {
+                // Default depth to 1 if not provided, resulting in H2 (##) matching the test case.
+                const headingLevel = (currentSectionDepth ?? 1);
+                const hashes = '#'.repeat(headingLevel);
+                logger.debug(`\t\tHeading level: ${headingLevel}`);
+                logger.debug(`\t\tSection title: ${section.title}`);
+                return `${hashes} ${formatOptions.sectionTitlePrefix ? `${formatOptions.sectionTitlePrefix} ${formatOptions.sectionTitleSeparator} ` : ""}${section.title}\n\n${formattedItems}`;
+            }
         } else {
-            // Default depth to 1 if not provided, resulting in H2 (##) matching the test case.
-            const headingLevel = (currentSectionDepth ?? 1);
-            const hashes = '#'.repeat(headingLevel);
-            logger.debug(`\t\tHeading level: ${headingLevel}`);
-            logger.debug(`\t\tSection title: ${section.title}`);
-            return `${hashes} ${formatOptions.sectionTitlePrefix ? `${formatOptions.sectionTitlePrefix} ${formatOptions.sectionTitleSeparator} ` : ""}${section.title}\n\n${formattedItems}`;
+            return '';
         }
     }
 
@@ -129,15 +137,21 @@ export const create = (options?: Options): Instance => {
         logger.debug('Formatting prompt');
         const chatRequest: Chat.Request = Chat.createRequest(model);
 
-        [prompt.persona].forEach((persona: Section<Instruction>) => {
-            chatRequest.addMessage(formatPersona(model, persona));
-        });
+        if (prompt.persona) {
+            [prompt.persona].forEach((persona: Section<Instruction>) => {
+                chatRequest.addMessage(formatPersona(model, persona));
+            });
+        }
 
-        const formattedAreas = [
-            formatSection(prompt.instructions),
-            formatSection(prompt.contents),
-            formatSection(prompt.contexts),
-        ].join("\n\n");
+        let formattedAreas: string = formatSection(prompt.instructions) + '\n\n';
+
+        if (prompt.contents) {
+            formattedAreas += formatSection(prompt.contents) + '\n\n';
+        }
+
+        if (prompt.contexts) {
+            formattedAreas += formatSection(prompt.contexts) + '\n\n';
+        }
 
         chatRequest.addMessage({
             role: "user",

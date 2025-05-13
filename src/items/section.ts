@@ -7,20 +7,20 @@ export interface Section<T extends Weighted> {
     items: (T | Section<T>)[];
     weight?: number;
     add: (
-        item: T | Section<T> | string,
+        item: T | T[] | Section<T> | Section<T>[] | string | string[],
         options?: WeightedOptions
     ) => Section<T>;
     append: (
-        item: T | Section<T> | string,
+        item: T | T[] | Section<T> | Section<T>[] | string | string[],
         options?: WeightedOptions
     ) => Section<T>;
     prepend: (
-        item: T | Section<T> | string,
+        item: T | T[] | Section<T> | Section<T>[] | string | string[],
         options?: WeightedOptions
     ) => Section<T>;
     insert: (
         index: number,
-        item: T | Section<T> | string,
+        item: T | T[] | Section<T> | Section<T>[] | string | string[],
         options?: WeightedOptions
     ) => Section<T>;
     replace: (
@@ -103,41 +103,60 @@ export const create = <T extends Weighted>(
 
     const weight = sectionOptions.weight || 1.0;
 
-    const append = (item: T | Section<T> | string, options?: WeightedOptions): Section<T> => {
+    const append = (item: T | T[] | Section<T> | Section<T>[] | string | string[], options?: WeightedOptions): Section<T> => {
         let itemOptions: WeightedOptions = weightedOptions;
         if (options) {
             itemOptions = { ...itemOptions, ...clean(options) };
         }
-        if (typeof item === 'string') {
-            items.push(createWeighted<T>(item, itemOptions));
+
+        if (Array.isArray(item)) {
+            item.forEach((item) => {
+                append(item);
+            });
         } else {
-            items.push(item);
+            if (typeof item === 'string') {
+                items.push(createWeighted<T>(item, itemOptions));
+            } else {
+                items.push(item);
+            }
         }
         return section;
     }
 
-    const prepend = (item: T | Section<T> | string, options?: WeightedOptions): Section<T> => {
+    const prepend = (item: T | T[] | Section<T> | Section<T>[] | string | string[], options?: WeightedOptions): Section<T> => {
         let itemOptions: WeightedOptions = weightedOptions;
         if (options) {
             itemOptions = { ...itemOptions, ...clean(options) };
         }
-        if (typeof item === 'string') {
-            items.unshift(createWeighted<T>(item, itemOptions));
+        if (Array.isArray(item)) {
+            item.forEach((item) => {
+                prepend(item);
+            });
         } else {
-            items.unshift(item);
+            if (typeof item === 'string') {
+                items.unshift(createWeighted<T>(item, itemOptions));
+            } else {
+                items.unshift(item);
+            }
         }
         return section;
     }
 
-    const insert = (index: number, item: T | Section<T> | string, options?: WeightedOptions): Section<T> => {
+    const insert = (index: number, item: T | T[] | Section<T> | Section<T>[] | string | string[], options?: WeightedOptions): Section<T> => {
         let itemOptions: WeightedOptions = weightedOptions;
         if (options) {
             itemOptions = { ...itemOptions, ...clean(options) };
         }
-        if (typeof item === 'string') {
-            items.splice(index, 0, createWeighted<T>(item, itemOptions));
+        if (Array.isArray(item)) {
+            item.forEach((item) => {
+                insert(index, item);
+            });
         } else {
-            items.splice(index, 0, item);
+            if (typeof item === 'string') {
+                items.splice(index, 0, createWeighted<T>(item, itemOptions));
+            } else {
+                items.splice(index, 0, item);
+            }
         }
         return section;
     }
@@ -160,7 +179,7 @@ export const create = <T extends Weighted>(
         return section;
     }
 
-    const add = (item: T | Section<T> | string, options?: WeightedOptions): Section<T> => {
+    const add = (item: T | T[] | Section<T> | Section<T>[] | string | string[], options?: WeightedOptions): Section<T> => {
         let itemOptions: WeightedOptions = weightedOptions;
         if (options) {
             itemOptions = { ...itemOptions, ...clean(options) };

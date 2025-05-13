@@ -2,13 +2,13 @@
  * @jest-environment node
  */
 import { jest, describe, expect, it, beforeEach } from '@jest/globals';
-import type { Context } from '../../src/items/context';
+import type { Context } from '@/items/context';
 
 // Create a mock function for createWeighted
 const mockCreateWeighted = jest.fn();
 
 // Use unstable_mockModule instead of jest.mock
-jest.unstable_mockModule('../../src/items/weighted', () => ({
+jest.unstable_mockModule('@/items/weighted', () => ({
     create: mockCreateWeighted,
     DEFAULT_WEIGHTED_OPTIONS: { weight: 1, parameters: {} },
     __esModule: true
@@ -26,10 +26,10 @@ describe('context', () => {
         // Default implementation for the mock
         mockCreateWeighted.mockImplementation((text) => ({ text }));
 
-        Weighted = await import('../../src/items/weighted');
+        Weighted = await import('@/items/weighted');
 
         // Import the module under test dynamically after mocking
-        const contextModule = await import('../../src/items/context');
+        const contextModule = await import('@/items/context');
         create = contextModule.create;
     });
 

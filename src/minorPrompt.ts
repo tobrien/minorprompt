@@ -13,6 +13,7 @@ export * as Parser from "./parser";
 export * as Chat from "./chat";
 export * as Loader from "./loader";
 export * as Override from "./override";
+export * as Builder from "./builder";
 
 // Export types
 export type { Content } from "./items/content";

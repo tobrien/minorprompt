@@ -1,10 +1,11 @@
-import { Section, Weighted, createSection } from "@tobrien/minorprompt";
+import { Parameters, Section, Weighted, createSection } from "./minorPrompt";
 import path from "path";
 import { DEFAULT_LOGGER, Logger, wrapLogger } from "./logger";
 import * as Storage from "./util/storage";
 
 export interface Options {
     logger?: Logger;
+    parameters?: Parameters;
 }
 
 export interface Instance {
@@ -46,7 +47,8 @@ export function removeFirstHeader(markdownText: string): string {
 }
 
 export const create = (options: Options): Instance => {
-    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER);
+    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER, 'Loader');
+    const parameters = options?.parameters || {};
 
     /**
      * Loads context from the provided directories and returns instruction sections
@@ -85,17 +87,17 @@ export const create = (options: Options): Instance => {
 
                     // Use the header from context.md as the section title, or fallback to directory name
                     const sectionTitle = firstHeader || dirName;
-                    mainContextSection = createSection<T>(sectionTitle);
+                    mainContextSection = createSection<T>(sectionTitle, { parameters });
 
                     // Add content without the header
                     if (firstHeader) {
-                        mainContextSection.add(removeFirstHeader(mainContextContent));
+                        mainContextSection.add(removeFirstHeader(mainContextContent), { parameters });
                     } else {
-                        mainContextSection.add(mainContextContent);
+                        mainContextSection.add(mainContextContent, { parameters });
                     }
                 } else {
                     // If no context.md exists, use directory name as title
-                    mainContextSection = createSection<T>(dirName);
+                    mainContextSection = createSection<T>(dirName, { parameters });
                 }
 
                 // Get all other files in the directory
@@ -122,11 +124,11 @@ export const create = (options: Options): Instance => {
                         }
 
                         // Create a subsection with the extracted name
-                        const fileSection = createSection<T>(sectionName);
-                        fileSection.add(contentToAdd);
+                        const fileSection = createSection<T>(sectionName, { parameters });
+                        fileSection.add(contentToAdd, { parameters });
 
                         // Add this file section to the main context section
-                        mainContextSection.add(fileSection as unknown as T);
+                        mainContextSection.add(fileSection as unknown as T, { parameters });
                     }
                 }
 
