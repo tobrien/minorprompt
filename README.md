@@ -4,6 +4,29 @@ A structured prompt engineering library for LLMs - because you have better thing
 
 > "I don't wanna hear it, know you're full of sh*t" - Minor Threat
 
+## Table of Contents
+- [Why MinorPrompt?](#why-minorprompt)
+- [Installation](#installation)
+- [Basic Usage](#basic-usage)
+- [Core Concepts](#core-concepts)
+  - [WeightedText](#weightedtext)
+  - [Prompt Structure Elements](#prompt-structure-elements)
+  - [Sections](#sections)
+- [Advanced Usage](#advanced-usage)
+  - [Creating Sections](#creating-sections)
+  - [Setting Section and Item Weights](#setting-section-and-item-weights)
+  - [Using Parameters for Customization](#using-parameters-for-customization)
+  - [Parsing Markdown for Section Creation](#parsing-markdown-for-section-creation)
+  - [Overriding Prompt Content](#overriding-prompt-content)
+  - [Building Prompts](#building-prompts)
+  - [Manipulating Section Contents](#manipulating-section-contents)
+  - [Using the MinorPrompt Loader for File-Based Prompts](#using-the-minorprompt-loader-for-file-based-prompts)
+  - [Customizing Format Options](#customizing-format-options)
+- [Model Support](#model-support)
+- [Why the Name?](#why-the-name)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Why MinorPrompt?
 
 Tired of spending hours crafting and formatting the perfect LLM prompt? MinorPrompt provides a structured way to organize your prompts, allowing you to focus on the content rather than the formatting.
@@ -34,7 +57,7 @@ section.add("Provide code examples when appropriate");
 
 // Verify parts of the output
 console.log('Number of instructions:', section.items.length);
-// Output: Number of instructions: 3
+// Output: Number of instructions: 2
 
 // Formatting a Section using Tags
 const formatterTags = Formatter.create();
@@ -229,6 +252,16 @@ Follow these guidelines when writing code.
 */
 ```
 
+For more information, see the [MinorPrompt Parser Documentation](docs/parser.md)
+
+### Overriding Prompt Content
+
+MinorPrompt's Override utility allows you to customize or replace parts of a prompt without altering the original prompt files. This is particularly useful in larger applications where you have default prompt templates but want to adjust certain sections for specific use cases, users, or environments. By using overrides, you can maintain a clean separation between core prompt content and custom modifications.
+
+The override system works by looking for specially-named files in an override directory that correspond to your prompt files. You can completely override a section (replace it entirely), prepend content (insert before the original), or append content (insert after the original). This is all done through a simple file naming convention where files with the same name fully override, files ending in `-pre.md` prepend content, and files ending in `-post.md` append content.
+
+For more information, see the [MinorPrompt Override Documentation](docs/override.md)
+
 ### Building Prompts
 
 The MinorPrompt library provides a powerful Builder pattern for constructing complex prompts programmatically. The Builder allows you to assemble prompts from various sources including files, directories, and inline content.
@@ -361,7 +394,7 @@ console.log( formatted );
 //
 //         This goes second
 ```
-### Using the Loader for File-Based Prompts
+### Using the MinorPrompt Loader for File-Based Prompts
 
 MinorPrompt provides a Loader utility that allows you to load prompt templates from external files. This is particularly useful when you want to:
 
@@ -372,6 +405,8 @@ MinorPrompt provides a Loader utility that allows you to load prompt templates f
 The Loader supports various file formats and can automatically parse the content into the appropriate Section structures.
 
 The Loader works seamlessly with the Parser to convert structured content into MinorPrompt's internal representation, allowing you to focus on writing clear prompts rather than managing their implementation details.
+
+For more documentation on the Loader, see the [MinorPrompt Loader Documentation](docs/loader.md)
 
 ### Customizing Format Options
 
