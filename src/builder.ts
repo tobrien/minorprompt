@@ -118,7 +118,7 @@ export const create = (options: Options): Instance => {
 
     const build = async () => {
         logger.debug("Building prompt");
-        const prompt = createPrompt(personaSection, contextSection, instructionSection, contentSection);
+        const prompt = createPrompt({ persona: personaSection, contexts: contextSection, instructions: instructionSection, contents: contentSection });
         return prompt;
     }
     instance.build = build;
