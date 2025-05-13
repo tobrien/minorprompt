@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import { describe, expect, it, beforeEach, afterEach } from '@jest/globals';
 import path from 'path';
-import type { Logger } from '@tobrien/minorprompt';
+import type { Logger } from '../src/logger';
 import type { Options, Instance } from '../src/override';
 
 // Define types for mocks
@@ -47,7 +47,7 @@ jest.unstable_mockModule('../src/util/storage', () => ({
     create: jest.fn(() => mockStorageInstance)
 }));
 
-jest.unstable_mockModule('@tobrien/minorprompt', () => ({
+jest.unstable_mockModule('../src/minorPrompt', () => ({
     Parser: {
         create: jest.fn(() => ({
             parseFile: jest.fn(async () => mockSection)
@@ -79,7 +79,7 @@ interface ImportedModules {
 const importModules = async (): Promise<ImportedModules> => {
     const { create } = await import('../src/override');
     const Storage = await import('../src/util/storage');
-    const minorprompt = await import('@tobrien/minorprompt');
+    const minorprompt = await import('../src/minorPrompt');
 
     return { create, Storage, minorprompt };
 };

@@ -8,7 +8,7 @@ import type { Trait } from '../../src/items/trait';
 const mockCreateWeighted = jest.fn();
 
 // Use unstable_mockModule instead of jest.mock
-jest.unstable_mockModule('../../src/items/weighted', () => ({
+jest.unstable_mockModule('@/items/weighted', () => ({
     create: mockCreateWeighted,
     DEFAULT_WEIGHTED_OPTIONS: { weight: 1, parameters: {} },
     __esModule: true
@@ -25,7 +25,7 @@ describe('trait', () => {
         mockCreateWeighted.mockImplementation((text) => ({ text }));
 
         // Import the module under test dynamically after mocking
-        const traitModule = await import('../../src/items/trait');
+        const traitModule = await import('@/items/trait');
         create = traitModule.create;
     });
 

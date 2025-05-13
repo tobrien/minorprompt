@@ -229,6 +229,72 @@ Follow these guidelines when writing code.
 */
 ```
 
+### Building Prompts
+
+The MinorPrompt library provides a powerful Builder pattern for constructing complex prompts programmatically. The Builder allows you to assemble prompts from various sources including files, directories, and inline content.
+
+#### Using the Builder
+
+The Builder provides a fluent interface for assembling prompts from various sources:
+
+<!-- skip-example -->
+```js
+import { Builder } from '@tobrien/minorprompt';
+
+// Create a builder instance
+const builder = Builder.create({
+  basePath: './prompts',         // Base directory for prompt files
+  overridePath: './overrides',   // Optional directory for override files
+  overrides: true,               // Whether to apply overrides
+  parameters: { role: 'expert' } // Optional parameters for substitution
+});
+
+// Build a prompt from various sources
+const prompt: Prompt = await builder
+  .addPersonaPath('personas/developer.md')
+  .addInstructionPath('instructions/code-review.md')
+  .loadContext(['./context/people', './context/projects'])
+  .addContent('Here is some code I want you to look at.')
+  .build();
+
+// Format and use the prompt with your LLM API
+```
+
+#### Builder Methods
+
+The Builder supports the following methods:
+
+- **`addPersonaPath(path)`**: Load a persona from a file
+- **`addContextPath(path)`**: Load context from a file
+- **`addInstructionPath(path)`**: Load instructions from a file  
+- **`addContentPath(path)`**: Load content from a file
+- **`addContent(text)`**: Add content directly as a string
+- **`addContext(text)`**: Add context directly as a string
+- **`loadContext(directories)`**: Load context from multiple directories
+- **`loadContent(directories)`**: Load content from multiple directories
+- **`build()`**: Assemble the final prompt
+
+All methods return the builder instance for chaining, and the `build()` method returns a Promise that resolves to a `Prompt` object.
+
+#### Loading from Directories
+
+The Builder can load content from entire directories:
+
+<!-- skip-example -->
+```js
+import { Builder } from '@tobrien/minorprompt/builder';
+
+const builder = Builder.create({
+  basePath: './prompts',
+});
+
+// Load all files from specific directories
+const prompt = await builder
+  .loadContext(['context/user', 'context/project'])
+  .loadContent(['content/queries'])
+  .build();
+```
+
 ### Manipulating Section Contents
 
 Once you have a `Section` object, whether created directly, through Markdown parsing, or as part of a `MinorPrompt` instance (e.g., `prompt.instructionsSection`), you have several methods to manage its contents. These methods allow for dynamic construction and modification of your prompt structure.

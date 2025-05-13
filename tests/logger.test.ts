@@ -81,32 +81,81 @@ describe('Logger', () => {
 
         it('debug should prepend library name to message', () => {
             wrappedLogger.debug('test message', { data: 'test' });
-            expect(mockLogger.debug).toHaveBeenCalledWith(`[${LIBRARY_NAME}] test message`, { data: 'test' });
+            expect(mockLogger.debug).toHaveBeenCalledWith(`[${LIBRARY_NAME}] : test message`, { data: 'test' });
         });
 
         it('info should prepend library name to message', () => {
             wrappedLogger.info('test message', { data: 'test' });
-            expect(mockLogger.info).toHaveBeenCalledWith(`[${LIBRARY_NAME}] test message`, { data: 'test' });
+            expect(mockLogger.info).toHaveBeenCalledWith(`[${LIBRARY_NAME}] : test message`, { data: 'test' });
         });
 
         it('warn should prepend library name to message', () => {
             wrappedLogger.warn('test message', { data: 'test' });
-            expect(mockLogger.warn).toHaveBeenCalledWith(`[${LIBRARY_NAME}] test message`, { data: 'test' });
+            expect(mockLogger.warn).toHaveBeenCalledWith(`[${LIBRARY_NAME}] : test message`, { data: 'test' });
         });
 
         it('error should prepend library name to message', () => {
             wrappedLogger.error('test message', { data: 'test' });
-            expect(mockLogger.error).toHaveBeenCalledWith(`[${LIBRARY_NAME}] test message`, { data: 'test' });
+            expect(mockLogger.error).toHaveBeenCalledWith(`[${LIBRARY_NAME}] : test message`, { data: 'test' });
         });
 
         it('verbose should prepend library name to message', () => {
             wrappedLogger.verbose('test message', { data: 'test' });
-            expect(mockLogger.verbose).toHaveBeenCalledWith(`[${LIBRARY_NAME}] test message`, { data: 'test' });
+            expect(mockLogger.verbose).toHaveBeenCalledWith(`[${LIBRARY_NAME}] : test message`, { data: 'test' });
         });
 
         it('silly should prepend library name to message', () => {
             wrappedLogger.silly('test message', { data: 'test' });
-            expect(mockLogger.silly).toHaveBeenCalledWith(`[${LIBRARY_NAME}] test message`, { data: 'test' });
+            expect(mockLogger.silly).toHaveBeenCalledWith(`[${LIBRARY_NAME}] : test message`, { data: 'test' });
+        });
+    });
+
+    describe('wrapLogger with name', () => {
+        const mockLogger: Logger = {
+            debug: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            verbose: jest.fn(),
+            silly: jest.fn()
+        };
+
+        const componentName = 'TestComponent';
+        const wrappedLogger = wrapLogger(mockLogger, componentName);
+
+        beforeEach(() => {
+            // Reset mock calls before each test
+            jest.clearAllMocks();
+        });
+
+        it('debug should prepend library name and component name to message', () => {
+            wrappedLogger.debug('test message', { data: 'test' });
+            expect(mockLogger.debug).toHaveBeenCalledWith(`[${LIBRARY_NAME}] [${componentName}]: test message`, { data: 'test' });
+        });
+
+        it('info should prepend library name and component name to message', () => {
+            wrappedLogger.info('test message', { data: 'test' });
+            expect(mockLogger.info).toHaveBeenCalledWith(`[${LIBRARY_NAME}] [${componentName}]: test message`, { data: 'test' });
+        });
+
+        it('warn should prepend library name and component name to message', () => {
+            wrappedLogger.warn('test message', { data: 'test' });
+            expect(mockLogger.warn).toHaveBeenCalledWith(`[${LIBRARY_NAME}] [${componentName}]: test message`, { data: 'test' });
+        });
+
+        it('error should prepend library name and component name to message', () => {
+            wrappedLogger.error('test message', { data: 'test' });
+            expect(mockLogger.error).toHaveBeenCalledWith(`[${LIBRARY_NAME}] [${componentName}]: test message`, { data: 'test' });
+        });
+
+        it('verbose should prepend library name and component name to message', () => {
+            wrappedLogger.verbose('test message', { data: 'test' });
+            expect(mockLogger.verbose).toHaveBeenCalledWith(`[${LIBRARY_NAME}] [${componentName}]: test message`, { data: 'test' });
+        });
+
+        it('silly should prepend library name and component name to message', () => {
+            wrappedLogger.silly('test message', { data: 'test' });
+            expect(mockLogger.silly).toHaveBeenCalledWith(`[${LIBRARY_NAME}] [${componentName}]: test message`, { data: 'test' });
         });
     });
 });

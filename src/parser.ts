@@ -3,10 +3,12 @@ import { marked } from 'marked';
 import { create as createSection, Section, SectionOptions } from './items/section';
 import { create as createWeighted, DEFAULT_WEIGHTED_OPTIONS, Weighted, WeightedOptions } from './items/weighted';
 import { DEFAULT_LOGGER, Logger, wrapLogger } from './logger';
+import { Parameters } from 'minorPrompt';
 import { clean } from './util/general';
 
 export interface Options {
     logger?: Logger;
+    parameters?: Parameters;
 }
 
 export interface Instance {
@@ -15,7 +17,7 @@ export interface Instance {
 }
 
 export const create = (options?: Options): Instance => {
-    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER);
+    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER, 'Parser');
 
     const parseFile = async <T extends Weighted>(filePath: string, options?: SectionOptions): Promise<Section<T>> => {
         try {
@@ -40,6 +42,7 @@ export const create = (options?: Options): Instance => {
      * @returns A Section containing all content in a hierarchical structure
      */
     const parse = <T extends Weighted>(markdownContent: string, options?: SectionOptions): Section<T> => {
+        const parameters = options?.parameters || {};
 
         logger.debug(`Parsing markdown content`);
 
@@ -47,7 +50,7 @@ export const create = (options?: Options): Instance => {
         const tokens = marked.lexer(markdownContent);
 
         // Create the main section (with no title by default)
-        const mainSection = createSection<T>('', options);
+        const mainSection = createSection<T>('', { parameters });
 
         // Track sections at each depth level
         const sectionStack: Section<T>[] = [mainSection];
@@ -89,7 +92,7 @@ export const create = (options?: Options): Instance => {
                     isFirstToken = false;
 
                     // Create a new section with this heading
-                    const newSection = createSection<T>(token.text, options);
+                    const newSection = createSection<T>(token.text, { parameters });
 
                     // Ensure the section stack has the right size based on this heading's depth
                     // (e.g., a depth-2 heading should be added to the depth-1 section)
@@ -107,7 +110,7 @@ export const create = (options?: Options): Instance => {
 
                     // Add new section to its parent
                     const parentSection = sectionStack[sectionStack.length - 1];
-                    parentSection.add(newSection);
+                    parentSection.add(newSection, itemOptions);
 
                     // Push this section onto the stack
                     sectionStack.push(newSection);
@@ -118,7 +121,7 @@ export const create = (options?: Options): Instance => {
                     isFirstToken = false;
                     const instruction: T = createWeighted<T>(token.text, itemOptions);
                     const currentSection = sectionStack[sectionStack.length - 1];
-                    currentSection.add(instruction);
+                    currentSection.add(instruction, itemOptions);
                     break;
                 }
 
@@ -128,7 +131,7 @@ export const create = (options?: Options): Instance => {
                     const listInstructionContent = token.items.map((item: any) => `- ${item.text}`).join('\n');
                     const listInstruction: T = createWeighted<T>(listInstructionContent, itemOptions);
                     const currentSection = sectionStack[sectionStack.length - 1];
-                    currentSection.add(listInstruction);
+                    currentSection.add(listInstruction, itemOptions);
                     break;
                 }
 
@@ -137,7 +140,7 @@ export const create = (options?: Options): Instance => {
                     // Represent code blocks as instructions
                     const codeInstruction: T = createWeighted<T>(`\`\`\`${token.lang || ''}\n${token.text}\n\`\`\``, itemOptions);
                     const currentSection = sectionStack[sectionStack.length - 1];
-                    currentSection.add(codeInstruction);
+                    currentSection.add(codeInstruction, itemOptions);
                     break;
                 }
 
@@ -151,7 +154,7 @@ export const create = (options?: Options): Instance => {
                     if ('text' in token && token.text) {
                         const fallbackInstruction: T = createWeighted<T>(token.text, itemOptions);
                         const currentSection = sectionStack[sectionStack.length - 1];
-                        currentSection.add(fallbackInstruction);
+                        currentSection.add(fallbackInstruction, itemOptions);
                     }
                     break;
                 }

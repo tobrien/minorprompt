@@ -56,7 +56,7 @@ function isWeighted<T extends Weighted>(obj: T | Section<T>): obj is T {
 
 
 export const create = (options?: Options): Instance => {
-    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER);
+    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER, 'Formatter');
 
     let formatOptions: FormatOptions = DEFAULT_FORMAT_OPTIONS;
     if (options?.formatOptions) {

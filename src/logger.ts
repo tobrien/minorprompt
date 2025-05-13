@@ -24,11 +24,11 @@ export const DEFAULT_LOGGER: Logger = {
     silly: (message: string, ...args: any[]) => console.log(message, ...args),
 }
 
-export const wrapLogger = (toWrap: Logger): Logger => {
+export const wrapLogger = (toWrap: Logger, name?: string): Logger => {
 
     const log = (level: keyof Logger, message: string, ...args: any[]) => {
 
-        message = `[${LIBRARY_NAME}] ${message}`;
+        message = `[${LIBRARY_NAME}] ${name ? `[${name}]` : ''}: ${message}`;
         toWrap[level](message, ...args);
     }
 

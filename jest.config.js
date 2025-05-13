@@ -24,7 +24,7 @@ export default {
     modulePaths: ['<rootDir>/src/'],
     preset: 'ts-jest/presets/default-esm',
     roots: ['<rootDir>/src/', '<rootDir>/tests/'],
-    // setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+    setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
     silent: false,
     testEnvironment: 'node',
     testEnvironmentOptions: {
