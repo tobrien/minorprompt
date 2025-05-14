@@ -319,4 +319,62 @@ describe('Loader', () => {
         });
     });
 
+    it('should ignore files matching ignore patterns', async () => {
+        const contextDir = '/test/context';
+        const ignorePattern = '\\.ignored\\.md';
+
+        // Mock exists to return false for context.md
+        // @ts-ignore
+        mockExists.mockImplementation((filePath: string) => {
+            return Promise.resolve(filePath !== path.join(contextDir, 'context.md'));
+        });
+
+        // Mock isDirectory to return true for directory paths
+        // @ts-ignore
+        mockIsDirectory.mockImplementation((dirPath: string) => {
+            return Promise.resolve(dirPath === contextDir);
+        });
+
+        // @ts-ignore
+        mockListFiles.mockResolvedValue(['file1.md', 'file2.ignored.md', 'file3.md']);
+        // @ts-ignore
+        mockIsFile.mockImplementation((filePath: string) => {
+            // Return false for directories, true for files
+            return Promise.resolve(filePath !== contextDir);
+        });
+
+        // Mock readFile to return content for the files
+        // @ts-ignore
+        mockReadFile.mockImplementation((filePath: string) => {
+            if (filePath.includes('file1.md')) {
+                return Promise.resolve('# File 1\nContent of file 1');
+            }
+            if (filePath.includes('file2.ignored.md')) {
+                return Promise.resolve('# Ignored File\nContent of ignored file');
+            }
+            if (filePath.includes('file3.md')) {
+                return Promise.resolve('# File 3\nContent of file 3');
+            }
+            return Promise.resolve('');
+        });
+
+        // Create loader instance with mock logger and ignore pattern
+        const mockLogger = { ...DEFAULT_LOGGER, debug: jest.fn(), error: jest.fn() };
+        const loaderWithIgnore = loaderModule.create({ logger: mockLogger, ignorePatterns: [ignorePattern] });
+
+        const sections = await loaderWithIgnore.load([contextDir]);
+
+        // Directory section itself
+        expect(sections.length).toBe(1);
+        expect(sections[0].title).toBe('context');
+
+        // Check that the ignored file is not present
+        expect(sections[0].items.length).toBe(2); // Only file1.md and file3.md
+        const loadedFiles = sections[0].items.map((item: Section<any>) => item.title);
+        expect(loadedFiles).toContain('File 1');
+        expect(loadedFiles).toContain('File 3');
+        expect(loadedFiles).not.toContain('Ignored File');
+        expect(loadedFiles).not.toContain('file2.ignored.md');
+    });
+
 });
