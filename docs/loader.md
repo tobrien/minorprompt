@@ -165,6 +165,14 @@ The Loader's `create` method may allow some configuration as well. Common config
 
 * **File Extensions**: The Loader is agnostic about file extensions and will include all files in the specified directory. There is one special file, `content.md`, which is parsed first and supplies instructions for the section that will contain sections for each of the included files. Additionally, any file with a `.md` extension will have its first header parsed to set the title of the resulting Section. You do not need to configure file extensions; the Loader handles all files appropriately based on their extension.
 * **Non-Recursive Directory Scanning**: The `load()` method only processes files in the immediate directories specified in the array. It does not automatically traverse subdirectories. If you need to process files in subdirectories, you must explicitly include those subdirectory paths in the array passed to `load()`. For example, to load files from both `./prompts/context/project` and `./prompts/context/team`, you would need to call `load(['./prompts/context/project', './prompts/context/team'])`.
+* **Ignore Patterns**: You can provide an array of regular expression strings via the `ignorePatterns` option in the `Options` interface. Files matching any of these patterns will be excluded from processing. This is useful for ignoring hidden files, temporary files, or specific file types you don't want to load. By default, the Loader uses the following patterns to ignore common non-content files:
+    * `^\\..*`: Ignores hidden files (e.g., `.git`, `.DS_Store`).
+    * `\\.(jpg|jpeg|png|gif|bmp|svg|webp|ico)$`: Ignores common image file extensions.
+    * `\\.(mp3|wav|ogg|aac|flac)$`: Ignores common audio file extensions.
+    * `\\.(mp4|mov|avi|mkv|webm)$`: Ignores common video file extensions.
+    * `\\.(pdf|doc|docx|xls|xlsx|ppt|pptx)$`: Ignores common document file formats that are typically binary.
+    * `\\.(zip|tar|gz|rar|7z)$`: Ignores common compressed file extensions.
+  You can override these defaults by passing your own array of regex strings to `ignorePatterns`.
 * **Parameters**: Similar to the Parser, the Loader might accept a `Parameters` object if you want to substitute placeholders in all loaded files. Another approach is to pass `parameters` into the Builder (so that after loading, when formatting, those parameters are applied).
 
 ### Parameterized Content Loading
