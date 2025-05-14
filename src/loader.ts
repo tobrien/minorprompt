@@ -6,6 +6,7 @@ import * as Storage from "./util/storage";
 export interface Options {
     logger?: Logger;
     parameters?: Parameters;
+    ignorePatterns?: string[];
 }
 
 export interface Instance {
@@ -46,9 +47,19 @@ export function removeFirstHeader(markdownText: string): string {
     return markdownText;
 }
 
+export const DEFAULT_IGNORE_PATTERNS: string[] = [
+    "^\\..*", // Hidden files (e.g., .git, .DS_Store)
+    "\\.(jpg|jpeg|png|gif|bmp|svg|webp|ico)$", // Image files
+    "\\.(mp3|wav|ogg|aac|flac)$", // Audio files
+    "\\.(mp4|mov|avi|mkv|webm)$", // Video files
+    "\\.(pdf|doc|docx|xls|xlsx|ppt|pptx)$", // Document files
+    "\\.(zip|tar|gz|rar|7z)$" // Compressed files
+];
+
 export const create = (options: Options): Instance => {
     const logger = wrapLogger(options?.logger || DEFAULT_LOGGER, 'Loader');
     const parameters = options?.parameters || {};
+    const ignorePatterns = options?.ignorePatterns || DEFAULT_IGNORE_PATTERNS;
 
     /**
      * Loads context from the provided directories and returns instruction sections
@@ -102,7 +113,13 @@ export const create = (options: Options): Instance => {
 
                 // Get all other files in the directory
                 const files = await storage.listFiles(contextDir);
-                for (const file of files) {
+                const ignorePatternsRegex = ignorePatterns.map(pattern => new RegExp(pattern, 'i'));
+
+                const filteredFiles = files.filter(file =>
+                    !ignorePatternsRegex.some(regex => regex.test(file))
+                );
+
+                for (const file of filteredFiles) {
                     // Skip the context.md file as it's already processed
                     if (file === 'context.md') continue;
 
