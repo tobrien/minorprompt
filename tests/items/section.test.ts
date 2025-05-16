@@ -2,11 +2,11 @@
  * @jest-environment node
  */
 import { jest, describe, expect, it, beforeEach } from '@jest/globals';
-import { SectionOptions, type Section, DEFAULT_SECTION_OPTIONS } from '../../src/items/section';
+import { SectionOptions, type Section } from '../../src/items/section';
 import type { Weighted } from '../../src/items/weighted';
 
 // Import the module under test - needs to be dynamic import with unstable_mockModule
-let create: <T extends Weighted>(options?: SectionOptions) => Section<T>;
+let create: <T extends Weighted>(options?: Partial<SectionOptions>) => Section<T>;
 let weightedModule: typeof import('../../src/items/weighted');
 let sectionModule: typeof import('../../src/items/section');
 
@@ -115,7 +115,7 @@ describe('section', () => {
 
             // Assert
             const addedItem = section.items[0] as Weighted;
-            expect(section.weight).toBe(1);
+            expect(section.weight).toBeUndefined();
             expect(addedItem.weight).toBe(itemWeight);
         });
 
@@ -205,7 +205,7 @@ describe('section', () => {
                 title: 'Test Section',
                 items: [{ text: 'Item 1' }, { text: 'Item 2' }],
             };
-            const options: SectionOptions = { itemWeight: 2 };
+            const options: Partial<SectionOptions> = { itemWeight: 2 };
 
             // Act
             const section = sectionModule.convertToSection(sectionLike, options);
@@ -230,7 +230,7 @@ describe('section', () => {
                 title: 'Parent Section',
                 items: [{ text: 'Item 1' }, nestedSectionLike],
             };
-            const options: SectionOptions = { itemWeight: 3 };
+            const options: Partial<SectionOptions> = { itemWeight: 3 };
 
 
             // Act
@@ -262,7 +262,7 @@ describe('section', () => {
             const section = sectionModule.convertToSection(sectionLike); // No options
 
             // Assert
-            expect((section.items[0] as Weighted).weight).toBe(DEFAULT_SECTION_OPTIONS.itemWeight);
+            expect((section.items[0] as Weighted).weight).toBeUndefined();
         });
 
         it('should throw an error if the object is not a section', () => {
@@ -279,7 +279,7 @@ describe('section', () => {
                 title: 'Test Section',
                 items: [],
             };
-            const options: SectionOptions = { weight: 5 };
+            const options: Partial<SectionOptions> = { weight: 5 };
 
             // Act
             const section = sectionModule.convertToSection(sectionLike, options);

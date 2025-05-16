@@ -47,8 +47,8 @@ describe('parser', () => {
 
         // Assert
         expect(result.items).toHaveLength(2);
-        expect(result.items[0]).toEqual({ text: 'This is a paragraph.', weight: 1 });
-        expect(result.items[1]).toEqual({ text: 'This is another paragraph.', weight: 1 });
+        expect(result.items[0]).toEqual({ text: 'This is a paragraph.' });
+        expect(result.items[1]).toEqual({ text: 'This is another paragraph.' });
     });
 
     it('should parse markdown with sections (h2 headings)', async () => {
@@ -66,9 +66,9 @@ describe('parser', () => {
 
         // Assert
         expect(result.items).toHaveLength(2);
-        expect(result.items[0]).toEqual({ text: 'Top level paragraph.', weight: 1 });
+        expect(result.items[0]).toEqual({ text: 'Top level paragraph.' });
         expect(result.items[1].title).toBe('Section 1');
-        expect(result.items[1].items[0]).toEqual({ text: 'Content.', weight: 1 });
+        expect(result.items[1].items[0]).toEqual({ text: 'Content.' });
     });
 
     it('should handle code blocks and lists', async () => {
@@ -87,8 +87,8 @@ describe('parser', () => {
         // Assert
         expect(result.title).toBe('Section');
         expect(result.items).toHaveLength(2);
-        expect(result.items[0]).toEqual({ text: '```js\ncode\n```', weight: 1 });
-        expect(result.items[1]).toEqual({ text: '- List item', weight: 1 });
+        expect(result.items[0]).toEqual({ text: '```js\ncode\n```' });
+        expect(result.items[1]).toEqual({ text: '- List item' });
     });
 
     it('should throw an error if file reading fails', async () => {
@@ -128,7 +128,7 @@ describe('parser', () => {
         // Assert
         expect(result.title).toBe('Main Title');
         expect(result.items).toHaveLength(2);
-        expect(result.items[0]).toEqual({ text: 'Some content', weight: 1 });
+        expect(result.items[0]).toEqual({ text: 'Some content' });
         expect(result.items[1].title).toBe('Section');
         expect(result.items[1].items).toHaveLength(0);
     });
@@ -150,7 +150,7 @@ describe('parser', () => {
         // When a document starts with an h2, that becomes the main section title
         expect(result.title).toBe('Section 1');
         expect(result.items).toHaveLength(2);
-        expect(result.items[0]).toEqual({ text: 'Content', weight: 1 });
+        expect(result.items[0]).toEqual({ text: 'Content' });
         expect(result.items[1].title).toBe('H1 inside section');
         expect(result.items[1].items).toHaveLength(0);
     });
@@ -174,7 +174,7 @@ describe('parser', () => {
         expect(result.items).toHaveLength(1);
         expect(result.items[0].title).toBe('Sub-heading');
         expect(result.items[0].items).toHaveLength(1);
-        expect(result.items[0].items[0]).toEqual({ text: 'Content', weight: 1 });
+        expect(result.items[0].items[0]).toEqual({ text: 'Content' });
     });
 
     it('should handle blockquote tokens', async () => {
@@ -192,7 +192,7 @@ describe('parser', () => {
         // Assert
         expect(result.title).toBe('Section');
         expect(result.items).toHaveLength(1);
-        expect(result.items[0]).toEqual({ text: 'This is a quote', weight: 1 });
+        expect(result.items[0]).toEqual({ text: 'This is a quote' });
     });
 
     it('should handle space tokens', async () => {
@@ -211,7 +211,7 @@ describe('parser', () => {
         // Assert
         expect(result.title).toBe('Section');
         expect(result.items).toHaveLength(1);
-        expect(result.items[0]).toEqual({ text: 'Paragraph', weight: 1 });
+        expect(result.items[0]).toEqual({ text: 'Paragraph' });
     });
 
     it('should handle complex document with multiple section transitions', async () => {
@@ -232,16 +232,16 @@ describe('parser', () => {
         // Assert
         expect(result.title).toBe(undefined);
         expect(result.items).toHaveLength(3); // Intro plus two separate sections
-        expect(result.items[0]).toEqual({ text: 'Intro', weight: 1 });
+        expect(result.items[0]).toEqual({ text: 'Intro' });
 
         expect(result.items[1].title).toBe('Section 1');
         expect(result.items[1].items).toHaveLength(1);
-        expect(result.items[1].items[0]).toEqual({ text: 'Content 1', weight: 1 });
+        expect(result.items[1].items[0]).toEqual({ text: 'Content 1' });
 
         // Section 2 is a sibling to Section 1, not nested inside it
         expect(result.items[2].title).toBe('Section 2');
         expect(result.items[2].items).toHaveLength(1);
-        expect(result.items[2].items[0]).toEqual({ text: 'Content 2', weight: 1 });
+        expect(result.items[2].items[0]).toEqual({ text: 'Content 2' });
     });
 
     it('should handle unexpected token types gracefully', async () => {
@@ -299,7 +299,7 @@ describe('parser', () => {
         // Assert
         expect(result.title).toBe('Section');
         expect(result.items).toHaveLength(1);
-        expect(result.items[0]).toEqual({ text: 'Custom content', weight: 1 });
+        expect(result.items[0]).toEqual({ text: 'Custom content' });
     });
 
     it('should handle multiple space tokens (line 89)', async () => {

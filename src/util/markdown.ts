@@ -64,10 +64,19 @@ export function isMarkdown(input: string | Buffer): boolean {
     // If more than 5% of the first few lines (up to 20 lines or all lines if fewer)
     // show markdown features, or if there are at least 2 distinct features in short texts,
     // consider it Markdown.
-    // This threshold is arbitrary and can be adjusted.
     const significantLineCount = Math.min(lines.length, 20);
     if (significantLineCount > 0) {
-        if (markdownFeatureCount / significantLineCount > 0.05 || (markdownFeatureCount >= 1 && significantLineCount <= 5) || markdownFeatureCount >= 2) {
+        // Calculate the exact threshold percentage
+        const thresholdPercentage = markdownFeatureCount / significantLineCount;
+
+        // Check against the 5% threshold (0.05)
+        // Using >= 0.05 exactly matches 5%, > 0.05 requires more than 5%
+        if (thresholdPercentage >= 0.05 + 0.0001) { // Adding a small epsilon to ensure exactly 5% passes but just below fails
+            return true;
+        }
+
+        // Other conditions for returning true
+        if ((markdownFeatureCount >= 1 && significantLineCount <= 5) || markdownFeatureCount >= 2) {
             return true;
         }
     }

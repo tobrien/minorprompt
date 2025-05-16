@@ -1,11 +1,10 @@
 import { marked } from 'marked';
-import { create as createSection, DEFAULT_SECTION_OPTIONS, Section, SectionOptions } from '../items/section';
-import { create as createWeighted, DEFAULT_WEIGHTED_OPTIONS, Weighted, WeightedOptions } from '../items/weighted';
-import { clean } from '../util/general';
+import { create as createSection, Section, SectionOptions, SectionOptionsSchema } from '../items/section';
+import { create as createWeighted, Weighted, WeightedOptionsSchema } from '../items/weighted';
 
 export const parseMarkdown = <T extends Weighted>(
     input: string | Buffer,
-    options?: SectionOptions
+    options: Partial<SectionOptions> = {}
 ): Section<T> => {
 
     let markdownContent;
@@ -15,14 +14,7 @@ export const parseMarkdown = <T extends Weighted>(
         markdownContent = input.toString();
     }
 
-
-    let sectionOptions = DEFAULT_SECTION_OPTIONS;
-    if (options) {
-        sectionOptions = {
-            ...sectionOptions,
-            ...clean(options)
-        };
-    }
+    const sectionOptions = SectionOptionsSchema.parse(options);
 
     // Use marked.lexer to get tokens without full parsing/rendering
     const tokens = marked.lexer(markdownContent);
@@ -37,23 +29,10 @@ export const parseMarkdown = <T extends Weighted>(
     let isFirstToken = true;
 
     // Set the item options
-    let itemOptions: WeightedOptions = DEFAULT_WEIGHTED_OPTIONS;
-    if (options?.parameters) {
-        itemOptions = {
-            ...itemOptions,
-            ...clean({
-                parameters: options.parameters!
-            })
-        };
-    }
-    if (options?.itemWeight) {
-        itemOptions = {
-            ...itemOptions,
-            ...clean({
-                weight: options.itemWeight!
-            })
-        };
-    }
+    const itemOptions = WeightedOptionsSchema.parse({
+        ...sectionOptions,
+        weight: sectionOptions.itemWeight,
+    });
 
     for (const token of tokens) {
         switch (token.type) {

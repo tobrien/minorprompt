@@ -101,7 +101,7 @@ describe('Loader', () => {
             };
 
             // Create loader with custom parameters
-            const loader = loaderModule.create({ parameters: customParams });
+            const loader = loaderModule.create({});
 
             const contextDir = '/test/context';
 
@@ -112,7 +112,7 @@ describe('Loader', () => {
             mockIsFile.mockImplementation(() => Promise.resolve(true));
             mockReadFile.mockImplementation(() => Promise.resolve('# Test File\nContent'));
 
-            await loader.load([contextDir]);
+            await loader.load([contextDir], { parameters: customParams });
 
             // Check that createSection was called with our custom parameters
             expect(mockCreateSection).toHaveBeenCalledWith(expect.objectContaining({ parameters: customParams }));
@@ -123,7 +123,7 @@ describe('Loader', () => {
             const customParams = { weight: 2.0 };
 
             // Create loader with custom parameters
-            const loader = loaderModule.create({ parameters: customParams });
+            const loader = loaderModule.create({});
 
             const contextDir = '/test/context';
             const contextFile = path.join(contextDir, 'context.md');
@@ -162,7 +162,7 @@ describe('Loader', () => {
                 };
             });
 
-            await loader.load([contextDir]);
+            await loader.load([contextDir], { parameters: customParams });
 
             // Verify that all createSection calls included our parameters
             // Should be called for main section and file section
@@ -190,7 +190,7 @@ describe('Loader', () => {
             const customParams = { weight: 1.2, system: true };
 
             // Create loader with custom parameters
-            const loader = loaderModule.create({ parameters: customParams });
+            const loader = loaderModule.create({});
 
             const contextDir1 = '/test/context1';
             const contextDir2 = '/test/context2';
@@ -200,7 +200,7 @@ describe('Loader', () => {
             mockIsDirectory.mockImplementation(() => Promise.resolve(true));
             mockListFiles.mockImplementation(() => Promise.resolve([]));
 
-            await loader.load([contextDir1, contextDir2]);
+            await loader.load([contextDir1, contextDir2], { parameters: customParams });
 
             // Should create two main sections with parameters
             expect(mockCreateSection).toHaveBeenCalledTimes(2);

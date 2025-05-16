@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+import { z } from "zod";
 import { LIBRARY_NAME } from "./constants";
 
 export interface Logger {
@@ -10,26 +12,32 @@ export interface Logger {
 }
 
 export const DEFAULT_LOGGER: Logger = {
-    // eslint-disable-next-line no-console
     debug: (message: string, ...args: any[]) => console.debug(message, ...args),
-    // eslint-disable-next-line no-console
     info: (message: string, ...args: any[]) => console.info(message, ...args),
-    // eslint-disable-next-line no-console
     warn: (message: string, ...args: any[]) => console.warn(message, ...args),
-    // eslint-disable-next-line no-console
     error: (message: string, ...args: any[]) => console.error(message, ...args),
-    // eslint-disable-next-line no-console
     verbose: (message: string, ...args: any[]) => console.log(message, ...args),
-    // eslint-disable-next-line no-console
     silly: (message: string, ...args: any[]) => console.log(message, ...args),
 }
 
 export const wrapLogger = (toWrap: Logger, name?: string): Logger => {
 
-    const log = (level: keyof Logger, message: string, ...args: any[]) => {
+    const requiredMethods: (keyof Logger)[] = ['debug', 'info', 'warn', 'error', 'verbose', 'silly'];
+    const missingMethods = requiredMethods.filter(method => typeof toWrap[method] !== 'function');
 
+    if (missingMethods.length > 0) {
+        throw new Error(`Logger is missing required methods: ${missingMethods.join(', ')}`);
+    }
+
+    const log = (level: keyof Logger, message: string, ...args: any[]) => {
         message = `[${LIBRARY_NAME}] ${name ? `[${name}]` : ''}: ${message}`;
-        toWrap[level](message, ...args);
+
+        if (level === 'debug') toWrap.debug(message, ...args);
+        else if (level === 'info') toWrap.info(message, ...args);
+        else if (level === 'warn') toWrap.warn(message, ...args);
+        else if (level === 'error') toWrap.error(message, ...args);
+        else if (level === 'verbose') toWrap.verbose(message, ...args);
+        else if (level === 'silly') toWrap.silly(message, ...args);
     }
 
     return {

@@ -1,4 +1,3 @@
-import { DEFAULT_SECTION_SEPARATOR } from "../src/formatter";
 import { Model } from "../src/chat";
 import { create as createFormatter, FormatOptions, SectionSeparator, SectionTitleProperty } from "../src/formatter";
 import { Content } from "../src/items/content";
@@ -336,4 +335,6 @@ describe("formatter", () => {
             expect(result.messages[1].content).toContain("Test context");
         });
     });
+
+
 });

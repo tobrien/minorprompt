@@ -173,4 +173,59 @@ describe('isMarkdown', () => {
         const utf8Buffer = Buffer.from('Just a normal sentence.');
         expect(isMarkdown(utf8Buffer)).toBe(false);
     });
+
+    // Additional tests for better coverage
+    test('should return false for null input', () => {
+        expect(isMarkdown(null as any)).toBe(false);
+    });
+
+    test('should return false for undefined input', () => {
+        expect(isMarkdown(undefined as any)).toBe(false);
+    });
+
+    test('should handle early exit for long markdown with features at the beginning', () => {
+        // Create a string with markdown features at the beginning and then a lot of plain text
+        const earlyMarkdown = '# Header\n* List item 1\n* List item 2\n\n' +
+            'Plain text '.repeat(500); // Long plain text afterwards
+        expect(isMarkdown(earlyMarkdown)).toBe(true);
+    });
+
+    test('should correctly identify markdown in text with exactly threshold percentage of features', () => {
+        // 1 out of 20 lines (5%) has markdown
+        const text = 'Plain text.\n'.repeat(19) + '# Header\n';
+        expect(isMarkdown(text)).toBe(true);
+    });
+
+    test('should return true for text with exactly one markdown feature in a short text', () => {
+        // Test for the condition: markdownFeatureCount >= 1 && significantLineCount <= 5
+        const text = 'Plain line 1\nPlain line 2\n# Header\nPlain line 4\nPlain line 5';
+        expect(isMarkdown(text)).toBe(true);
+    });
+
+    // Tests for specific feature patterns that might need explicit coverage
+    test('should return true for inline code with single backtick', () => {
+        const markdown = 'This sentence has `inline code` in it.';
+        expect(isMarkdown(markdown)).toBe(true);
+    });
+
+    test('should return true for inline code with multiple backticks', () => {
+        const markdown = 'This sentence has ``inline code with backtick (`) inside`` in it.';
+        expect(isMarkdown(markdown)).toBe(true);
+    });
+
+    test('should return true for image markdown syntax', () => {
+        const markdown = 'An image: ![alt text](image-url.png)';
+        expect(isMarkdown(markdown)).toBe(true);
+    });
+
+    test('should handle indented markdown correctly', () => {
+        const markdown = '   * Indented list item\n     > Indented blockquote';
+        expect(isMarkdown(markdown)).toBe(true);
+    });
+
+    test('should handle Buffer with non-standard encoding gracefully', () => {
+        // Create a buffer with some non-standard encoding but still readable text
+        const buffer = Buffer.from([0xC2, 0xA9, 0x20, 0x4D, 0x61, 0x72, 0x6B, 0x64, 0x6F, 0x77, 0x6E]);
+        expect(isMarkdown(buffer)).toBe(false);
+    });
 });

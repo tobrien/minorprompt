@@ -1,17 +1,21 @@
-import { Formatter, Logger, Parser, Section, Weighted } from './minorPrompt';
-import { DEFAULT_SECTION_OPTIONS, SectionOptions } from './items/section';
-import { DEFAULT_LOGGER, wrapLogger } from './logger';
 import path from 'path';
-import { clean } from './util/general';
+import { z } from 'zod';
+import { ParametersSchema } from './items/parameters';
+import { SectionOptions, SectionOptionsSchema } from './items/section';
+import { DEFAULT_LOGGER, wrapLogger } from './logger';
+import { Formatter, Parser, Section, Weighted } from './minorPrompt';
 import * as Storage from './util/storage';
-import { Parameters } from './minorPrompt';
 
-export interface Options {
-    logger?: Logger;
-    configDir: string;
-    overrides: boolean;
-    parameters?: Parameters;
-}
+const OptionsSchema = z.object({
+    logger: z.any().optional().default(DEFAULT_LOGGER),
+    configDir: z.string().default('./overrides'),
+    overrides: z.boolean().default(false),
+    parameters: ParametersSchema.optional().default({}),
+});
+
+export type Options = z.infer<typeof OptionsSchema>;
+
+export type OptionsParam = Partial<Options>;
 
 export interface Instance {
     customize: <T extends Weighted>(overrideFile: string, section: Section<T>, sectionOptions?: SectionOptions) => Promise<Section<T>>;
@@ -19,23 +23,31 @@ export interface Instance {
         Promise<{ override?: Section<T>, prepend?: Section<T>, append?: Section<T> }>;
 }
 
-export const create = (options: Options): Instance => {
-    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER, 'Override');
+export const create = (overrideOptions: OptionsParam = {}): Instance => {
+    const options: Required<Options> = OptionsSchema.parse(overrideOptions) as Required<Options>;
+
+    const parameters = options.parameters;
+
+    const logger = wrapLogger(options?.logger, 'Override');
     const storage = Storage.create({ log: logger.debug });
-    const parameters = options?.parameters || {};
+
+    const loadOptions = (sectionOptions: Partial<SectionOptions> = {}): SectionOptions => {
+        const currentOptions = SectionOptionsSchema.parse(sectionOptions);
+        return {
+            ...currentOptions,
+            parameters: {
+                ...parameters,
+                ...currentOptions.parameters
+            }
+        }
+    }
 
     const override = async <T extends Weighted>(
         overrideFile: string,
         section: Section<T>,
-        sectionOptions?: SectionOptions
+        sectionOptions: Partial<SectionOptions> = {}
     ): Promise<{ override?: Section<T>, prepend?: Section<T>, append?: Section<T> }> => {
-        let currentSectionOptions = DEFAULT_SECTION_OPTIONS;
-        if (sectionOptions) {
-            currentSectionOptions = {
-                ...currentSectionOptions,
-                ...clean(sectionOptions),
-            }
-        }
+        const currentSectionOptions = loadOptions(sectionOptions);
 
         const baseFile = path.join(options.configDir, overrideFile);
         const preFile = baseFile.replace('.md', '-pre.md');
@@ -45,13 +57,13 @@ export const create = (options: Options): Instance => {
 
         if (await storage.exists(preFile)) {
             logger.debug('Found pre file %s', preFile);
-            const parser = Parser.create({ parameters });
+            const parser = Parser.create({ logger });
             response.prepend = await parser.parseFile<T>(preFile, currentSectionOptions);
         }
 
         if (await storage.exists(postFile)) {
             logger.debug('Found post file %s', postFile);
-            const parser = Parser.create({ parameters });
+            const parser = Parser.create({ logger });
             response.append = await parser.parseFile<T>(postFile, currentSectionOptions);
         }
 
@@ -59,7 +71,7 @@ export const create = (options: Options): Instance => {
             logger.debug('Found base file %s', baseFile);
             if (options.overrides) {
                 logger.warn('WARNING: Core directives are being overwritten by custom configuration');
-                const parser = Parser.create({ parameters });
+                const parser = Parser.create({ logger });
                 response.override = await parser.parseFile<T>(baseFile, currentSectionOptions);
             } else {
                 logger.error('ERROR: Core directives are being overwritten by custom configuration');
@@ -70,14 +82,12 @@ export const create = (options: Options): Instance => {
         return response;
     }
 
-    const customize = async <T extends Weighted>(overrideFile: string, section: Section<T>, sectionOptions?: SectionOptions): Promise<Section<T>> => {
-        let currentSectionOptions = DEFAULT_SECTION_OPTIONS;
-        if (sectionOptions) {
-            currentSectionOptions = {
-                ...currentSectionOptions,
-                ...clean(sectionOptions),
-            }
-        }
+    const customize = async <T extends Weighted>(
+        overrideFile: string,
+        section: Section<T>,
+        sectionOptions: Partial<SectionOptions> = {}
+    ): Promise<Section<T>> => {
+        const currentSectionOptions = loadOptions(sectionOptions);
 
         const { overrideContent, prepend, append }: { overrideContent?: Section<T>, prepend?: Section<T>, append?: Section<T> } = await override(overrideFile, section, currentSectionOptions);
         let finalSection: Section<T> = section;

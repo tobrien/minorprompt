@@ -1,6 +1,8 @@
-export interface Parameters {
-    [key: string]: string | number | boolean | string[] | number[] | boolean[];
-}
+import { z } from "zod";
+
+export const ParametersSchema = z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.union([z.string(), z.number(), z.boolean()]))]));
+
+export type Parameters = z.infer<typeof ParametersSchema>;
 
 export const create = (parameters: Parameters): Parameters => {
     return parameters;
@@ -11,9 +13,21 @@ export const apply = (text: string, parameters?: Parameters): string => {
         return text;
     }
 
+    // First, trim parameters keys to handle whitespace in placeholder names
+    const trimmedParams: Record<string, any> = {};
+    Object.keys(parameters).forEach(key => {
+        trimmedParams[key.trim()] = parameters[key];
+    });
+
+    // Process all placeholders, preserving ones that don't have matching parameters
     return text.replace(/\{\{([^{}]+)\}\}/g, (match, p1) => {
-        const parameter = parameters[p1];
-        if (typeof parameter === 'string') {
+        const paramKey = p1.trim();
+        const parameter = trimmedParams[paramKey];
+
+        if (parameter === undefined) {
+            // Preserve the original placeholder if parameter doesn't exist
+            return match;
+        } else if (typeof parameter === 'string') {
             return parameter;
         } else if (typeof parameter === 'number') {
             return parameter.toString();
