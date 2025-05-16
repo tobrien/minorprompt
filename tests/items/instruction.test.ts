@@ -11,6 +11,9 @@ const mockCreateWeighted = jest.fn();
 jest.unstable_mockModule('@/items/weighted', () => ({
     create: mockCreateWeighted,
     DEFAULT_WEIGHTED_OPTIONS: { weight: 1, parameters: {} },
+    WeightedOptionsSchema: {
+        parse: jest.fn().mockReturnValue({ weight: 1, parameters: {} })
+    },
     __esModule: true
 }));
 

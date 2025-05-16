@@ -1,11 +1,11 @@
 {
     "name": "@tobrien/minorprompt",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "description": "Get it together, and organize your prompts.",
     "type": "module",
     "module": "./dist/main.js",
     "types": "./dist/main.d.ts",
-    "packageManager": "pnpm@10.10.0",
+    "packageManager": "pnpm@10.11.0",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/tobrien/minorprompt.git"
@@ -23,6 +23,7 @@
         "watch": "vite build --watch",
         "test": "pnpm run test:coverage && pnpm run test:readme",
         "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+        "test:debug": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
         "test:readme": "markdown-doctest -c .markdown-doctest-setup.mjs README.md",
         "lint": "eslint . --ext .ts",
         "lint:fix": "eslint . --ext .ts --fix",
@@ -67,6 +68,7 @@
     },
     "dependencies": {
         "glob": "^11.0.2",
-        "marked": "^15.0.11"
+        "marked": "^15.0.11",
+        "zod": "^3.24.4"
     }
 }

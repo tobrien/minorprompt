@@ -1,10 +1,9 @@
-import { DEFAULT_WEIGHTED_OPTIONS, Weighted, WeightedOptions, create as createWeighted } from "./weighted";
+import { Weighted, WeightedOptions, WeightedOptionsSchema, create as createWeighted } from "./weighted";
 
 export type Context = Weighted;
 
-export const DEFAULT_CONTEXT_OPTIONS: WeightedOptions = DEFAULT_WEIGHTED_OPTIONS;
-
-export const create = (text: string, options: WeightedOptions = DEFAULT_CONTEXT_OPTIONS): Context => {
-    return createWeighted<Context>(text, options);
+export const create = (text: string, options: Partial<WeightedOptions> = {}): Context => {
+    const weightedOptions = WeightedOptionsSchema.parse(options);
+    return createWeighted<Context>(text, weightedOptions);
 }
 

@@ -1,16 +1,24 @@
-import { Parameters, Section, Weighted, createSection } from "./minorPrompt";
 import path from "path";
-import { DEFAULT_LOGGER, Logger, wrapLogger } from "./logger";
+import { z } from "zod";
+import { DEFAULT_IGNORE_PATTERNS } from "./constants";
+import { ParametersSchema } from "./items/parameters";
+import { SectionOptions, SectionOptionsSchema } from "./items/section";
+import { DEFAULT_LOGGER, wrapLogger } from "./logger";
+import { Section, Weighted, createSection } from "./minorPrompt";
 import * as Storage from "./util/storage";
 
-export interface Options {
-    logger?: Logger;
-    parameters?: Parameters;
-    ignorePatterns?: string[];
-}
+const OptionsSchema = z.object({
+    logger: z.any().optional().default(DEFAULT_LOGGER),
+    ignorePatterns: z.array(z.string()).optional().default(DEFAULT_IGNORE_PATTERNS),
+    parameters: ParametersSchema.optional().default({}),
+});
+
+export type Options = z.infer<typeof OptionsSchema>;
+
+export type OptionsParam = Partial<Options>;
 
 export interface Instance {
-    load: <T extends Weighted>(contextDirectories?: string[]) => Promise<Section<T>[]>;
+    load: <T extends Weighted>(contextDirectories?: string[], options?: SectionOptions) => Promise<Section<T>[]>;
 }
 
 /**
@@ -47,19 +55,23 @@ export function removeFirstHeader(markdownText: string): string {
     return markdownText;
 }
 
-export const DEFAULT_IGNORE_PATTERNS: string[] = [
-    "^\\..*", // Hidden files (e.g., .git, .DS_Store)
-    "\\.(jpg|jpeg|png|gif|bmp|svg|webp|ico)$", // Image files
-    "\\.(mp3|wav|ogg|aac|flac)$", // Audio files
-    "\\.(mp4|mov|avi|mkv|webm)$", // Video files
-    "\\.(pdf|doc|docx|xls|xlsx|ppt|pptx)$", // Document files
-    "\\.(zip|tar|gz|rar|7z)$" // Compressed files
-];
+export const create = (loaderOptions?: OptionsParam): Instance => {
+    const options: Required<Options> = OptionsSchema.parse(loaderOptions || {}) as Required<Options>;
+    const parameters = options.parameters;
 
-export const create = (options: Options): Instance => {
-    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER, 'Loader');
-    const parameters = options?.parameters || {};
-    const ignorePatterns = options?.ignorePatterns || DEFAULT_IGNORE_PATTERNS;
+    const logger = wrapLogger(options.logger, 'Loader');
+    const ignorePatterns = options.ignorePatterns;
+
+    const loadOptions = (sectionOptions: Partial<SectionOptions> = {}): SectionOptions => {
+        const currentOptions = SectionOptionsSchema.parse(sectionOptions);
+        return {
+            ...currentOptions,
+            parameters: {
+                ...parameters,
+                ...currentOptions.parameters
+            }
+        }
+    }
 
     /**
      * Loads context from the provided directories and returns instruction sections
@@ -68,8 +80,11 @@ export const create = (options: Options): Instance => {
      * @returns Array of instruction sections loaded from context directories
      */
     const load = async<T extends Weighted>(
-        contextDirectories?: string[]
+        contextDirectories: string[] = [],
+        options: Partial<SectionOptions> = {}
     ): Promise<Section<T>[]> => {
+        const sectionOptions = loadOptions(options);
+
         logger.debug(`Loading context from ${contextDirectories}`);
         const contextSections: Section<T>[] = [];
 
@@ -98,17 +113,17 @@ export const create = (options: Options): Instance => {
 
                     // Use the header from context.md as the section title, or fallback to directory name
                     const sectionTitle = firstHeader || dirName;
-                    mainContextSection = createSection<T>(sectionTitle, { parameters });
+                    mainContextSection = createSection<T>({ ...sectionOptions, title: sectionTitle });
 
                     // Add content without the header
                     if (firstHeader) {
-                        mainContextSection.add(removeFirstHeader(mainContextContent), { parameters });
+                        mainContextSection.add(removeFirstHeader(mainContextContent), { ...sectionOptions });
                     } else {
-                        mainContextSection.add(mainContextContent, { parameters });
+                        mainContextSection.add(mainContextContent, { ...sectionOptions });
                     }
                 } else {
                     // If no context.md exists, use directory name as title
-                    mainContextSection = createSection<T>(dirName, { parameters });
+                    mainContextSection = createSection<T>({ ...sectionOptions, title: dirName });
                 }
 
                 // Get all other files in the directory
@@ -141,11 +156,11 @@ export const create = (options: Options): Instance => {
                         }
 
                         // Create a subsection with the extracted name
-                        const fileSection = createSection<T>(sectionName, { parameters });
-                        fileSection.add(contentToAdd, { parameters });
+                        const fileSection = createSection<T>({ ...sectionOptions, title: sectionName });
+                        fileSection.add(contentToAdd, { ...sectionOptions });
 
                         // Add this file section to the main context section
-                        mainContextSection.add(fileSection as unknown as T, { parameters });
+                        mainContextSection.add(fileSection as unknown as T, { ...sectionOptions });
                     }
                 }
 

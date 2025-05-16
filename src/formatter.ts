@@ -1,16 +1,41 @@
-import { Instruction, Logger } from "minorPrompt";
+import { Instruction } from "minorPrompt";
+import { z } from "zod";
 import * as Chat from "./chat";
 import { getPersonaRole, Message, Model } from "./chat";
+import { DEFAULT_FORMAT_OPTIONS } from "./constants";
 import { Section } from "./items/section";
 import { Weighted } from "./items/weighted";
-import { Prompt } from "./prompt";
-import { clean } from "./util/general";
 import { DEFAULT_LOGGER, wrapLogger } from "./logger";
+import { Prompt } from "./prompt";
+import { clean, stringifyJSON } from "./util/general";
 
-export interface Options {
-    logger?: Logger;
-    formatOptions?: Partial<FormatOptions>;
-}
+export const SectionSeparatorSchema = z.enum(["tag", "markdown"]);
+export const SectionTitlePropertySchema = z.enum(["title", "name"]);
+
+export type SectionSeparator = z.infer<typeof SectionSeparatorSchema>;
+export type SectionTitleProperty = z.infer<typeof SectionTitlePropertySchema>;
+
+
+export const FormatOptionsSchema = z.object({
+    sectionSeparator: SectionSeparatorSchema,
+    sectionIndentation: z.boolean(),
+    sectionTitleProperty: SectionTitlePropertySchema,
+    sectionTitlePrefix: z.string().optional(),
+    sectionTitleSeparator: z.string().optional(),
+    sectionDepth: z.number().default(1),
+});
+
+export type FormatOptions = z.infer<typeof FormatOptionsSchema>;
+
+
+export const OptionSchema = z.object({
+    logger: z.any().optional().default(DEFAULT_LOGGER),
+    formatOptions: FormatOptionsSchema.partial().optional().default(DEFAULT_FORMAT_OPTIONS),
+});
+
+export type Options = z.infer<typeof OptionSchema>;
+
+export type OptionsParam = Partial<Options>;
 
 export interface Instance {
     formatPersona: (model: Model, persona: Section<Instruction>) => Message;
@@ -18,31 +43,6 @@ export interface Instance {
     formatArray: <T extends Weighted>(items: (T | Section<T>)[], sectionDepth?: number) => string;
     formatPrompt: (model: Model, prompt: Prompt) => Chat.Request;
 }
-
-export type SectionSeparator = "tag" | "markdown";
-export type SectionTitleProperty = "title" | "name";
-
-export interface FormatOptions {
-    sectionSeparator: SectionSeparator;
-    sectionIndentation: boolean;
-    sectionTitleProperty: SectionTitleProperty;
-    sectionTitlePrefix?: string;
-    sectionTitleSeparator?: string;
-    sectionDepth: number;
-}
-
-export const DEFAULT_SECTION_SEPARATOR: SectionSeparator = "tag";
-export const DEFAULT_SECTION_INDENTATION = true;
-export const DEFAULT_SECTION_TAG = "section";
-export const DEFAULT_SECTION_TITLE_PROPERTY = "title";
-
-const DEFAULT_FORMAT_OPTIONS: FormatOptions = {
-    sectionSeparator: DEFAULT_SECTION_SEPARATOR,
-    sectionIndentation: DEFAULT_SECTION_INDENTATION,
-    sectionTitleProperty: DEFAULT_SECTION_TITLE_PROPERTY,
-    sectionDepth: 0,
-}
-
 
 // Type guard to check if an object is a Section
 function isSection<T extends Weighted>(obj: T | Section<T>): obj is Section<T> {
@@ -55,8 +55,13 @@ function isWeighted<T extends Weighted>(obj: T | Section<T>): obj is T {
 }
 
 
-export const create = (options?: Options): Instance => {
-    const logger = wrapLogger(options?.logger || DEFAULT_LOGGER, 'Formatter');
+export const create = (formatterOptions?: OptionsParam): Instance => {
+    const options: Required<Options> = OptionSchema.parse(formatterOptions || {}) as Required<Options>;
+
+    // eslint-disable-next-line no-console
+    console.log('\n\n\n\n\n%s\n\n\n\n\n', stringifyJSON(options));
+
+    const logger = wrapLogger(options.logger, 'Formatter');
 
     let formatOptions: FormatOptions = DEFAULT_FORMAT_OPTIONS;
     if (options?.formatOptions) {
@@ -84,8 +89,8 @@ export const create = (options?: Options): Instance => {
         item: T | Section<T>,
         sectionDepth?: number,
     ): string => {
-        logger.debug(`Formatting ${isSection(item) ? "section" : "item"} Item: %s`, JSON.stringify(item));
-        const currentSectionDepth: number = sectionDepth ? sectionDepth : formatOptions.sectionDepth;
+        logger.debug(`Formatting ${isSection(item) ? "section" : "item"} Item: %s`, stringifyJSON(item));
+        const currentSectionDepth = sectionDepth ?? formatOptions.sectionDepth;
         logger.debug(`\fCurrent section depth: ${currentSectionDepth}`);
 
         let result: string = "";
@@ -102,7 +107,7 @@ export const create = (options?: Options): Instance => {
 
     const formatSection = <T extends Weighted>(section: Section<T>, sectionDepth?: number): string => {
         logger.debug(`Formatting section`);
-        const currentSectionDepth: number = sectionDepth ? sectionDepth : formatOptions.sectionDepth;
+        const currentSectionDepth = sectionDepth ?? formatOptions.sectionDepth;
         logger.debug(`\t\tCurrent section depth: ${currentSectionDepth}`);
 
         if (section) {
@@ -112,7 +117,7 @@ export const create = (options?: Options): Instance => {
                 return `<${section.title ?? "section"}>\n${formattedItems}\n</${section.title ?? "section"}>`;
             } else {
                 // Default depth to 1 if not provided, resulting in H2 (##) matching the test case.
-                const headingLevel = (currentSectionDepth ?? 1);
+                const headingLevel = currentSectionDepth;
                 const hashes = '#'.repeat(headingLevel);
                 logger.debug(`\t\tHeading level: ${headingLevel}`);
                 logger.debug(`\t\tSection title: ${section.title}`);
@@ -129,7 +134,7 @@ export const create = (options?: Options): Instance => {
         sectionDepth?: number
     ): string => {
         logger.debug(`Formatting array`);
-        const currentSectionDepth: number = sectionDepth ? sectionDepth : formatOptions.sectionDepth;
+        const currentSectionDepth = sectionDepth ?? formatOptions.sectionDepth;
         return items.map(item => format(item, currentSectionDepth)).join("\n\n");
     }
 

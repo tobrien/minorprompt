@@ -15,11 +15,11 @@ describe('Persona', () => {
 
     beforeEach(() => {
         // Initialize persona with empty sections before each test
-        const traitsSection = createSection<Trait>('Traits');
-        const instructionsSection = createSection<Instruction>('Instructions');
+        const traitsSection = createSection<Trait>({ title: 'Traits' });
+        const instructionsSection = createSection<Instruction>({ title: 'Instructions' });
 
         // Create persona section and add subsections
-        const personaSection = createSection('Persona');
+        const personaSection = createSection({ title: 'Persona' });
         personaSection.add(traitsSection);
         personaSection.add(instructionsSection);
 
@@ -40,9 +40,9 @@ describe('Persona', () => {
     describe('traits', () => {
         it('should store traits in a section', () => {
             const trait: Trait = createTrait('Test Trait');
-            const traitsSection = createSection<Trait>('Traits');
+            const traitsSection = createSection<Trait>({ title: 'Traits' });
             traitsSection.add(trait);
-            const instructionsSection = createSection<Instruction>('Instructions');
+            const instructionsSection = createSection<Instruction>({ title: 'Instructions' });
 
             // Create persona object
             const testPersona: Persona = {
@@ -57,9 +57,9 @@ describe('Persona', () => {
 
         it('should access traits from the section', () => {
             const traitText = 'Test Trait from String';
-            const traitsSection = createSection<Trait>('Traits');
+            const traitsSection = createSection<Trait>({ title: 'Traits' });
             traitsSection.add(traitText);
-            const instructionsSection = createSection<Instruction>('Instructions');
+            const instructionsSection = createSection<Instruction>({ title: 'Instructions' });
 
             // Create persona object
             const testPersona: Persona = {
@@ -76,8 +76,8 @@ describe('Persona', () => {
     describe('instructions', () => {
         it('should store instructions in a section', () => {
             const instruction: Instruction = createInstruction('Test Instruction');
-            const traitsSection = createSection<Trait>('Traits');
-            const instructionsSection = createSection<Instruction>('Instructions');
+            const traitsSection = createSection<Trait>({ title: 'Traits' });
+            const instructionsSection = createSection<Instruction>({ title: 'Instructions' });
             instructionsSection.add(instruction);
 
             // Create persona object
@@ -93,8 +93,8 @@ describe('Persona', () => {
 
         it('should access instructions from the section', () => {
             const instructionText = 'Test Instruction from String';
-            const traitsSection = createSection<Trait>('Traits');
-            const instructionsSection = createSection<Instruction>('Instructions');
+            const traitsSection = createSection<Trait>({ title: 'Traits' });
+            const instructionsSection = createSection<Instruction>({ title: 'Instructions' });
             instructionsSection.add(instructionText);
 
             // Create persona object
@@ -110,11 +110,11 @@ describe('Persona', () => {
     });
 
     it('should maintain separate sections for traits and instructions', () => {
-        const traitsSection = createSection<Trait>('Traits');
+        const traitsSection = createSection<Trait>({ title: 'Traits' });
         traitsSection.add('Trait 1');
         traitsSection.add('Trait 2');
 
-        const instructionsSection = createSection<Instruction>('Instructions');
+        const instructionsSection = createSection<Instruction>({ title: 'Instructions' });
         instructionsSection.add('Instruction 1');
         instructionsSection.add('Instruction 2');
         instructionsSection.add('Instruction 3');

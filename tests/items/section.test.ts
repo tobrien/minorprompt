@@ -2,11 +2,11 @@
  * @jest-environment node
  */
 import { jest, describe, expect, it, beforeEach } from '@jest/globals';
-import { SectionOptions, type Section, DEFAULT_SECTION_OPTIONS } from '../../src/items/section';
+import { SectionOptions, type Section } from '../../src/items/section';
 import type { Weighted } from '../../src/items/weighted';
 
 // Import the module under test - needs to be dynamic import with unstable_mockModule
-let create: <T extends Weighted>(title: string, options?: SectionOptions) => Section<T>;
+let create: <T extends Weighted>(options?: Partial<SectionOptions>) => Section<T>;
 let weightedModule: typeof import('../../src/items/weighted');
 let sectionModule: typeof import('../../src/items/section');
 
@@ -24,7 +24,7 @@ describe('section', () => {
             const title = 'Test Section';
 
             // Act
-            const section = create<Weighted>(title);
+            const section = create<Weighted>({ title });
 
             // Assert
             expect(section.title).toBe(title);
@@ -33,7 +33,7 @@ describe('section', () => {
 
         it('should have an add method', () => {
             // Arrange
-            const section = create<Weighted>('Test Section');
+            const section = create<Weighted>({ title: 'Test Section' });
 
             // Assert
             expect(typeof section.add).toBe('function');
@@ -43,7 +43,7 @@ describe('section', () => {
     describe('add', () => {
         it('should add an item to the section', () => {
             // Arrange
-            const section = create<Weighted>('Test Section');
+            const section = create<Weighted>({ title: 'Test Section' });
             const item: Weighted = { text: 'Test Item' };
 
             // Act
@@ -55,8 +55,8 @@ describe('section', () => {
 
         it('should add a section to the section', () => {
             // Arrange
-            const parent = create<Weighted>('Parent Section');
-            const child = create<Weighted>('Child Section');
+            const parent = create<Weighted>({ title: 'Parent Section' });
+            const child = create<Weighted>({ title: 'Child Section' });
 
             // Act
             parent.add(child);
@@ -67,7 +67,7 @@ describe('section', () => {
 
         it('should return the section for chaining', () => {
             // Arrange
-            const section = create<Weighted>('Test Section');
+            const section = create<Weighted>({ title: 'Test Section' });
 
             // Act
             const result = section.add('Item 1');
@@ -78,7 +78,7 @@ describe('section', () => {
 
         it('should support chained calls', () => {
             // Arrange
-            const section = create<Weighted>('Test Section');
+            const section = create<Weighted>({ title: 'Test Section' });
 
             // Act
             section.add('Item 1');
@@ -97,7 +97,7 @@ describe('section', () => {
             const weight = 10;
 
             // Act
-            const section = create<Weighted>(title, { weight });
+            const section = create<Weighted>({ title, weight });
 
             // Assert
             expect(section.weight).toBe(weight);
@@ -107,7 +107,7 @@ describe('section', () => {
             // Arrange
             const sectionTitle = 'Parent Section';
             const itemWeight = 5;
-            const section = create<Weighted>(sectionTitle, { itemWeight });
+            const section = create<Weighted>({ title: sectionTitle, itemWeight });
             const itemText = 'Test Item';
 
             // Act
@@ -115,14 +115,14 @@ describe('section', () => {
 
             // Assert
             const addedItem = section.items[0] as Weighted;
-            expect(section.weight).toBe(1);
+            expect(section.weight).toBeUndefined();
             expect(addedItem.weight).toBe(itemWeight);
         });
 
         it('should preserve explicit item weight when adding a Weighted item to a weighted section', () => {
             // Arrange
             const sectionWeight = 5;
-            const section = create<Weighted>('Weighted Section', { weight: sectionWeight });
+            const section = create<Weighted>({ title: 'Weighted Section', weight: sectionWeight });
             const itemWeight = 10;
             const item: Weighted = { text: 'Explicit Weight Item', weight: itemWeight };
 
@@ -137,9 +137,9 @@ describe('section', () => {
         it('should preserve explicit child section weight when adding to a weighted parent section', () => {
             // Arrange
             const parentWeight = 5;
-            const parent = create<Weighted>('Parent Section', { weight: parentWeight });
+            const parent = create<Weighted>({ title: 'Parent Section', weight: parentWeight });
             const childWeight = 10;
-            const child = create<Weighted>('Child Section', { weight: childWeight });
+            const child = create<Weighted>({ title: 'Child Section', weight: childWeight });
 
             // Act
             parent.add(child);
@@ -153,7 +153,7 @@ describe('section', () => {
     describe('isSection', () => {
         it('should return true for a valid section object', () => {
             // Arrange
-            const section = create<Weighted>('Test Section');
+            const section = create<Weighted>({ title: 'Test Section' });
 
             // Act
             const result = sectionModule.isSection(section);
@@ -205,7 +205,7 @@ describe('section', () => {
                 title: 'Test Section',
                 items: [{ text: 'Item 1' }, { text: 'Item 2' }],
             };
-            const options: SectionOptions = { itemWeight: 2 };
+            const options: Partial<SectionOptions> = { itemWeight: 2 };
 
             // Act
             const section = sectionModule.convertToSection(sectionLike, options);
@@ -230,7 +230,7 @@ describe('section', () => {
                 title: 'Parent Section',
                 items: [{ text: 'Item 1' }, nestedSectionLike],
             };
-            const options: SectionOptions = { itemWeight: 3 };
+            const options: Partial<SectionOptions> = { itemWeight: 3 };
 
 
             // Act
@@ -262,7 +262,7 @@ describe('section', () => {
             const section = sectionModule.convertToSection(sectionLike); // No options
 
             // Assert
-            expect((section.items[0] as Weighted).weight).toBe(DEFAULT_SECTION_OPTIONS.itemWeight);
+            expect((section.items[0] as Weighted).weight).toBeUndefined();
         });
 
         it('should throw an error if the object is not a section', () => {
@@ -279,7 +279,7 @@ describe('section', () => {
                 title: 'Test Section',
                 items: [],
             };
-            const options: SectionOptions = { weight: 5 };
+            const options: Partial<SectionOptions> = { weight: 5 };
 
             // Act
             const section = sectionModule.convertToSection(sectionLike, options);
@@ -292,7 +292,7 @@ describe('section', () => {
     describe('append', () => {
         it('should append an item to the end of the section', () => {
             // Arrange
-            const section = create<Weighted>('Test Section').add('Initial Item');
+            const section = create<Weighted>({ title: 'Test Section' }).add('Initial Item');
             const newItem = { text: 'Appended Item' };
 
             // Act
@@ -305,7 +305,7 @@ describe('section', () => {
 
         it('should append a string item, converting it to Weighted with section default itemWeight', () => {
             // Arrange
-            const section = create<Weighted>('Test Section', { itemWeight: 3 });
+            const section = create<Weighted>({ title: 'Test Section', itemWeight: 3 });
             const newItemText = 'Appended String Item';
 
             // Act
@@ -320,7 +320,7 @@ describe('section', () => {
 
         it('should append a string item with explicit options', () => {
             // Arrange
-            const section = create<Weighted>('Test Section', { itemWeight: 3 });
+            const section = create<Weighted>({ title: 'Test Section', itemWeight: 3 });
             const newItemText = 'Appended String Item';
 
             // Act
@@ -335,7 +335,7 @@ describe('section', () => {
 
         it('should return the section for chaining', () => {
             // Arrange
-            const section = create<Weighted>('Test Section');
+            const section = create<Weighted>({ title: 'Test Section' });
 
             // Act
             const result = section.append('Item 1');
@@ -348,7 +348,7 @@ describe('section', () => {
     describe('prepend', () => {
         it('should prepend an item to the beginning of the section', () => {
             // Arrange
-            const section = create<Weighted>('Test Section').add('Initial Item');
+            const section = create<Weighted>({ title: 'Test Section' }).add('Initial Item');
             const newItem = { text: 'Prepended Item' };
 
             // Act
@@ -361,7 +361,7 @@ describe('section', () => {
 
         it('should prepend a string item, converting it to Weighted with section default itemWeight', () => {
             // Arrange
-            const section = create<Weighted>('Test Section', { itemWeight: 3 });
+            const section = create<Weighted>({ title: 'Test Section', itemWeight: 3 });
             const newItemText = 'Prepended String Item';
 
             // Act
@@ -376,7 +376,7 @@ describe('section', () => {
 
         it('should prepend a string item with explicit options', () => {
             // Arrange
-            const section = create<Weighted>('Test Section', { itemWeight: 3 });
+            const section = create<Weighted>({ title: 'Test Section', itemWeight: 3 });
             const newItemText = 'Prepended String Item';
 
             // Act
@@ -391,7 +391,7 @@ describe('section', () => {
 
         it('should return the section for chaining', () => {
             // Arrange
-            const section = create<Weighted>('Test Section');
+            const section = create<Weighted>({ title: 'Test Section' });
 
             // Act
             const result = section.prepend('Item 1');
@@ -404,7 +404,7 @@ describe('section', () => {
     describe('insert', () => {
         it('should insert an item at the specified index', () => {
             // Arrange
-            const section = create<Weighted>('Test Section').add('Item 0').add('Item 2');
+            const section = create<Weighted>({ title: 'Test Section' }).add('Item 0').add('Item 2');
             const newItem = { text: 'Inserted Item' };
 
             // Act
@@ -419,7 +419,7 @@ describe('section', () => {
 
         it('should insert a string item, converting it to Weighted with section default itemWeight', () => {
             // Arrange
-            const section = create<Weighted>('Test Section', { itemWeight: 3 }).add('Item 0').add('Item 2');
+            const section = create<Weighted>({ title: 'Test Section', itemWeight: 3 }).add('Item 0').add('Item 2');
             const newItemText = 'Inserted String Item';
 
             // Act
@@ -434,7 +434,7 @@ describe('section', () => {
 
         it('should insert a string item with explicit options', () => {
             // Arrange
-            const section = create<Weighted>('Test Section', { itemWeight: 3 }).add('Item 0').add('Item 2');
+            const section = create<Weighted>({ title: 'Test Section', itemWeight: 3 }).add('Item 0').add('Item 2');
             const newItemText = 'Inserted String Item';
 
             // Act
@@ -449,7 +449,7 @@ describe('section', () => {
 
         it('should return the section for chaining', () => {
             // Arrange
-            const section = create<Weighted>('Test Section');
+            const section = create<Weighted>({ title: 'Test Section' });
 
             // Act
             const result = section.insert(0, 'Item 1');
@@ -462,7 +462,7 @@ describe('section', () => {
     describe('remove', () => {
         it('should remove an item at the specified index', () => {
             // Arrange
-            const section = create<Weighted>('Test Section').add('Item 0').add('Item 1').add('Item 2');
+            const section = create<Weighted>({ title: 'Test Section' }).add('Item 0').add('Item 1').add('Item 2');
 
             // Act
             section.remove(1);
@@ -475,7 +475,7 @@ describe('section', () => {
 
         it('should return the section for chaining', () => {
             // Arrange
-            const section = create<Weighted>('Test Section').add('Item 0');
+            const section = create<Weighted>({ title: 'Test Section' }).add('Item 0');
 
             // Act
             const result = section.remove(0);
@@ -488,7 +488,7 @@ describe('section', () => {
     describe('replace', () => {
         it('should replace an item at the specified index', () => {
             // Arrange
-            const section = create<Weighted>('Test Section').add('Item 0').add('Old Item').add('Item 2');
+            const section = create<Weighted>({ title: 'Test Section' }).add('Item 0').add('Old Item').add('Item 2');
             const newItem = { text: 'Replaced Item' };
 
             // Act
@@ -501,7 +501,7 @@ describe('section', () => {
 
         it('should replace with a string item, converting it to Weighted with section default itemWeight', () => {
             // Arrange
-            const section = create<Weighted>('Test Section', { itemWeight: 3 }).add('Item 0').add('Old Item');
+            const section = create<Weighted>({ title: 'Test Section', itemWeight: 3 }).add('Item 0').add('Old Item');
             const newItemText = 'Replaced String Item';
 
             // Act
@@ -516,7 +516,7 @@ describe('section', () => {
 
         it('should replace with a string item with explicit options', () => {
             // Arrange
-            const section = create<Weighted>('Test Section', { itemWeight: 3 }).add('Item 0').add('Old Item');
+            const section = create<Weighted>({ title: 'Test Section', itemWeight: 3 }).add('Item 0').add('Old Item');
             const newItemText = 'Replaced String Item';
 
             // Act
@@ -531,7 +531,7 @@ describe('section', () => {
 
         it('should return the section for chaining', () => {
             // Arrange
-            const section = create<Weighted>('Test Section').add('Old Item');
+            const section = create<Weighted>({ title: 'Test Section' }).add('Old Item');
 
             // Act
             const result = section.replace(0, 'New Item');

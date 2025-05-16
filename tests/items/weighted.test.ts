@@ -25,7 +25,6 @@ describe('weighted', () => {
             // Assert
             expect(result).toEqual({
                 text: 'Test text',
-                weight: 1
             });
         });
 
@@ -37,7 +36,7 @@ describe('weighted', () => {
             const result = create<Weighted>(text);
 
             // Assert
-            expect(result.weight).toBe(1);
+            expect(result.weight).toBeUndefined();
         });
 
         it('should typecast the result as specified generic type', () => {

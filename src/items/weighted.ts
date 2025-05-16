@@ -1,29 +1,26 @@
-import { clean } from "../util/general";
-import { Parameters, apply as applyParameters } from "./parameters";
+import { z } from "zod";
+import { ParametersSchema, apply as applyParameters } from "./parameters";
 
-export interface Weighted {
-    text: string;
-    weight?: number;
-}
+export const WeightedSchema = z.object({
+    text: z.string(),
+    weight: z.number().optional(),
+});
 
-export interface WeightedOptions {
-    weight?: number;
-    parameters?: Parameters;
-}
+export type Weighted = z.infer<typeof WeightedSchema>;
 
-export const DEFAULT_WEIGHTED_OPTIONS: WeightedOptions = { weight: 1.0, parameters: {} };
+export const WeightedOptionsSchema = z.object({
+    weight: z.number().optional(),
+    parameters: ParametersSchema.optional(),
+});
+
+export type WeightedOptions = z.infer<typeof WeightedOptionsSchema>;
+
 
 export const create = <T extends Weighted>(
     text: string,
-    options?: WeightedOptions
+    options: Partial<WeightedOptions> = {}
 ): T => {
-    let weightedOptions: WeightedOptions = DEFAULT_WEIGHTED_OPTIONS;
-    if (options) {
-        weightedOptions = {
-            ...DEFAULT_WEIGHTED_OPTIONS,
-            ...clean(options)
-        };
-    }
+    const weightedOptions = WeightedOptionsSchema.parse(options);
     const parameterizedText = applyParameters(text, weightedOptions.parameters);
 
     return {
