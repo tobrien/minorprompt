@@ -48,13 +48,13 @@ describe("formatter", () => {
             const traits = [{ text: "trait1", weight: 1 }, { text: "trait2", weight: 1 }];
             const instructions = [{ text: "instruction1", weight: 1 }, { text: "instruction2", weight: 1 }];
 
-            const traitsSection = createSection('Traits');
-            const instructionsSection = createSection('Instructions');
+            const traitsSection = createSection({ title: 'Traits' });
+            const instructionsSection = createSection({ title: 'Instructions' });
 
             traits.forEach(trait => traitsSection.add(trait));
             instructions.forEach(instruction => instructionsSection.add(instruction));
 
-            const persona = createSection('Persona');
+            const persona = createSection({ title: 'Persona' });
             persona.add(traitsSection);
             persona.add(instructionsSection);
 
@@ -67,13 +67,13 @@ describe("formatter", () => {
             const traits = [{ text: "trait1", weight: 1 }, { text: "trait2", weight: 1 }];
             const instructions = [{ text: "instruction1", weight: 1 }, { text: "instruction2", weight: 1 }];
 
-            const traitsSection = createSection('Traits');
-            const instructionsSection = createSection('Instructions');
+            const traitsSection = createSection({ title: 'Traits' });
+            const instructionsSection = createSection({ title: 'Instructions' });
 
             traits.forEach(trait => traitsSection.add(trait));
             instructions.forEach(instruction => instructionsSection.add(instruction));
 
-            const persona = createSection('Persona');
+            const persona = createSection({ title: 'Persona' });
             persona.add(traitsSection);
             persona.add(instructionsSection);
 
@@ -304,22 +304,22 @@ describe("formatter", () => {
     describe("formatPrompt", () => {
         it("should format prompt correctly", () => {
             const model: Model = "gpt-4o";
-            const instructions = createSection('Instructions');
-            const contents = createSection('Contents');
-            const contexts = createSection('Contexts');
+            const instructions = createSection({ title: 'Instructions' });
+            const contents = createSection({ title: 'Contents' });
+            const contexts = createSection({ title: 'Contexts' });
 
             // Add some content to the prompt
             instructions.add("Test instruction");
             contents.add("Test content");
             contexts.add("Test context");
 
-            const traitsSection = createSection('Traits');
-            const personaInstructionsSection = createSection('Instructions');
+            const traitsSection = createSection({ title: 'Traits' });
+            const personaInstructionsSection = createSection({ title: 'Instructions' });
 
             traitsSection.add({ text: "trait1", weight: 1 });
             personaInstructionsSection.add({ text: "instruction1", weight: 1 });
 
-            const persona = createSection('Persona');
+            const persona = createSection({ title: 'Persona' });
             persona.add(traitsSection);
             persona.add(personaInstructionsSection);
 

@@ -16,8 +16,8 @@ export interface Instance {
     addContextPath(contentPath: string): Promise<Instance>;
     addInstructionPath(contentPath: string): Promise<Instance>;
     addContentPath(contentPath: string): Promise<Instance>;
-    addContent(content: string): Promise<Instance>;
-    addContext(context: string): Promise<Instance>;
+    addContent(content: string, title?: string): Promise<Instance>;
+    addContext(context: string, title?: string): Promise<Instance>;
     loadContext(contextDirectories: string[]): Promise<Instance>;
     loadContent(contentDirectories: string[]): Promise<Instance>;
     build(): Promise<Prompt>;
@@ -30,10 +30,10 @@ export const create = (options: Options): Instance => {
     const override = Override.create({ logger, configDir: options.overridePath || "./", overrides: options.overrides });
     const loader = Loader.create({ logger, parameters });
 
-    const personaSection: Section<Instruction> = createSection("Persona", { parameters });
-    const contextSection: Section<Context> = createSection("Context", { parameters });
-    const instructionSection: Section<Instruction> = createSection("Instruction", { parameters });
-    const contentSection: Section<Content> = createSection("Content", { parameters });
+    const personaSection: Section<Instruction> = createSection({ title: "Persona", parameters });
+    const contextSection: Section<Context> = createSection({ title: "Context", parameters });
+    const instructionSection: Section<Instruction> = createSection({ title: "Instruction", parameters });
+    const contentSection: Section<Content> = createSection({ title: "Content", parameters });
 
 
     const instance: Partial<Instance> = {}
@@ -100,17 +100,17 @@ export const create = (options: Options): Instance => {
     }
     instance.addContentPath = addContentPath;
 
-    const addContent = async (content: string): Promise<Instance> => {
+    const addContent = async (content: string | Buffer, title?: string): Promise<Instance> => {
         logger.debug("Adding content");
-        const parsedContentSection: Section<Content> = parser.parse<Content>(content);
+        const parsedContentSection: Section<Content> = parser.parse<Content>(content, { title });
         contentSection.add(parsedContentSection);
         return instance as Instance;
     }
     instance.addContent = addContent;
 
-    const addContext = async (context: string): Promise<Instance> => {
+    const addContext = async (context: string | Buffer, title?: string): Promise<Instance> => {
         logger.debug("Adding context");
-        const parsedContextSection: Section<Context> = parser.parse<Context>(context);
+        const parsedContextSection: Section<Context> = parser.parse<Context>(context, { title });
         contextSection.add(parsedContextSection);
         return instance as Instance;
     }

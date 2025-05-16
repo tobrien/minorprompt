@@ -98,7 +98,7 @@ export const create = (options: Options): Instance => {
 
                     // Use the header from context.md as the section title, or fallback to directory name
                     const sectionTitle = firstHeader || dirName;
-                    mainContextSection = createSection<T>(sectionTitle, { parameters });
+                    mainContextSection = createSection<T>({ title: sectionTitle, parameters });
 
                     // Add content without the header
                     if (firstHeader) {
@@ -108,7 +108,7 @@ export const create = (options: Options): Instance => {
                     }
                 } else {
                     // If no context.md exists, use directory name as title
-                    mainContextSection = createSection<T>(dirName, { parameters });
+                    mainContextSection = createSection<T>({ title: dirName, parameters });
                 }
 
                 // Get all other files in the directory
@@ -141,7 +141,7 @@ export const create = (options: Options): Instance => {
                         }
 
                         // Create a subsection with the extracted name
-                        const fileSection = createSection<T>(sectionName, { parameters });
+                        const fileSection = createSection<T>({ title: sectionName, parameters });
                         fileSection.add(contentToAdd, { parameters });
 
                         // Add this file section to the main context section

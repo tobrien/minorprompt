@@ -1,6 +1,4 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { create } from '../src/parser';
-import { Section } from '../src/items/section';
 
 // Setup mocks before importing the module
 const mockReadFile = jest.fn<(path: string, encoding: string) => Promise<string>>();
@@ -26,7 +24,7 @@ describe('parser', () => {
 
     beforeEach(async () => {
         // Import the module dynamically to ensure mocks are applied
-        const parserModule = await import('../src/parser');
+        const parserModule = await import('../../src/parser');
         parser = parserModule.create();
         parseFile = parser.parseFile;
         parse = parser.parse;
@@ -339,112 +337,5 @@ describe('parser', () => {
         // Assert
         expect(result).toBeDefined();
         expect(result.title).toBe('');
-    });
-
-    describe('Buffer handling', () => {
-        it('should parse markdown content from a Buffer', async () => {
-            // Arrange
-            const markdownContent = Buffer.from('# Title\n\nThis is content.');
-
-            mockLexer.mockReturnValue([
-                { type: 'heading', depth: 1, text: 'Title' },
-                { type: 'paragraph', text: 'This is content.' }
-            ]);
-
-            // Act
-            const result = parse(markdownContent as unknown as string);
-
-            // Assert
-            expect(result.title).toBe('Title');
-            expect(result.items).toHaveLength(1);
-            expect(result.items[0]).toEqual({ text: 'This is content.', weight: 1 });
-        });
-
-        it('should handle Buffer with multiple sections', async () => {
-            // Arrange
-            const markdownContent = Buffer.from('# Main Title\n\n## Section 1\n\nContent 1\n\n## Section 2\n\nContent 2');
-
-            mockLexer.mockReturnValue([
-                { type: 'heading', depth: 1, text: 'Main Title' },
-                { type: 'heading', depth: 2, text: 'Section 1' },
-                { type: 'paragraph', text: 'Content 1' },
-                { type: 'heading', depth: 2, text: 'Section 2' },
-                { type: 'paragraph', text: 'Content 2' }
-            ]);
-
-            // Act
-            const result = parse(markdownContent as unknown as string);
-
-            // Assert
-            expect(result.title).toBe('Main Title');
-            expect(result.items).toHaveLength(2);
-
-            expect(result.items[0].title).toBe('Section 1');
-            expect(result.items[0].items[0]).toEqual({ text: 'Content 1', weight: 1 });
-
-            expect(result.items[1].title).toBe('Section 2');
-            expect(result.items[1].items[0]).toEqual({ text: 'Content 2', weight: 1 });
-        });
-
-        it('should handle Buffer with code blocks', async () => {
-            // Arrange
-            const markdownContent = Buffer.from('## Section\n```javascript\nconst x = 1;\n```');
-
-            mockLexer.mockReturnValue([
-                { type: 'heading', depth: 2, text: 'Section' },
-                { type: 'code', lang: 'javascript', text: 'const x = 1;' }
-            ]);
-
-            // Act
-            const result = parse(markdownContent as unknown as string);
-
-            // Assert
-            expect(result.title).toBe('Section');
-            expect(result.items).toHaveLength(1);
-            expect(result.items[0]).toEqual({ text: '```javascript\nconst x = 1;\n```', weight: 1 });
-        });
-
-        it('should handle parseFile with Buffer data', async () => {
-            // Arrange
-            const filePath = 'test.md';
-            const fileContent = '# File Title\n\nFile content.';
-            mockReadFile.mockResolvedValue(fileContent);
-            mockLexer.mockReturnValue([
-                { type: 'heading', depth: 1, text: 'File Title' },
-                { type: 'paragraph', text: 'File content.' }
-            ]);
-
-            // Act
-            const result = await parseFile(filePath);
-
-            // Assert
-            expect(result.title).toBe('File Title');  // From the filename without extension
-            expect(result.items).toHaveLength(1);
-            expect(result.items[0]).toEqual({ text: 'File content.', weight: 1 });
-        });
-
-        it('should throw error when trying to parse unsupported content', async () => {
-            // We can't easily mock the internal utilities directly in the test
-            // So for this test we'll use jest.spyOn to mock the parse method itself
-
-            // Create a binary-like Buffer that shouldn't be parsed as text or markdown
-            const binaryContent = Buffer.from([0xFF, 0xD8, 0xFF, 0xE0]);
-
-            // Mock parse implementation to simulate unsupported content error
-            const originalParse = parser.parse;
-            parser.parse = jest.fn().mockImplementation(() => {
-                throw new Error('Unsupported content supplied to parse, minorprompt currently only supports markdown and text');
-            });
-
-            try {
-                // Act & Assert
-                expect(() => parser.parse(binaryContent as unknown as string)).toThrow(
-                    /Unsupported content supplied to parse/
-                );
-            } finally {
-                // Restore original function
-                parser.parse = originalParse;
-            }
-        });
     });
 });

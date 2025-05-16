@@ -32,6 +32,7 @@ export interface Section<T extends Weighted> {
 }
 
 export interface SectionOptions {
+    title?: string;
     weight?: number;
     itemWeight?: number;
     parameters?: Parameters;
@@ -65,7 +66,7 @@ export const convertToSection = (
     }
 
     if (isSection(object)) {
-        const section = create(object.title, sectionOptions);
+        const section = create({ ...sectionOptions, title: object.title });
         object.items.forEach((item: any) => {
             if (isSection(item)) {
                 section.append(convertToSection(item, sectionOptions));
@@ -80,7 +81,6 @@ export const convertToSection = (
 }
 
 export const create = <T extends Weighted>(
-    title: string,
     options?: SectionOptions
 ): Section<T> => {
     const items: (T | Section<T>)[] = [];
@@ -100,8 +100,6 @@ export const create = <T extends Weighted>(
             parameters: sectionOptions.parameters
         };
     }
-
-    const weight = sectionOptions.weight || 1.0;
 
     const append = (item: T | T[] | Section<T> | Section<T>[] | string | string[], options?: WeightedOptions): Section<T> => {
         let itemOptions: WeightedOptions = weightedOptions;
@@ -188,9 +186,9 @@ export const create = <T extends Weighted>(
     }
 
     const section: Section<T> = {
-        title,
+        title: sectionOptions.title,
         items,
-        weight,
+        weight: sectionOptions.weight,
         add,
         append,
         prepend,

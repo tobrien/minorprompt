@@ -1,4 +1,4 @@
-
+export const DEFAULT_CHARACTER_ENCODING = "utf8";
 export const LIBRARY_NAME = "minorprompt";
 
 export const DEFAULT_PERSONA_ROLE = "developer";

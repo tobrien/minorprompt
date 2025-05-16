@@ -32,10 +32,10 @@ describe('Prompt', () => {
 
     test('should create a prompt with empty arrays', async () => {
 
-        const persona = createSection('Persona');
-        const instructions = createSection('Instructions');
-        const contents = createSection('Contents');
-        const contexts = createSection('Contexts');
+        const persona = createSection({ title: 'Persona' });
+        const instructions = createSection({ title: 'Instructions' });
+        const contents = createSection({ title: 'Contents' });
+        const contexts = createSection({ title: 'Contexts' });
 
         const prompt = createPrompt({ persona, instructions, contents, contexts });
 
@@ -46,10 +46,10 @@ describe('Prompt', () => {
     });
 
     test('should add an instruction from a string', async () => {
-        const persona = createSection('Persona');
-        const instructions = createSection('Instructions');
-        const contents = createSection('Contents');
-        const contexts = createSection('Contexts');
+        const persona = createSection({ title: 'Persona' });
+        const instructions = createSection({ title: 'Instructions' });
+        const contents = createSection({ title: 'Contents' });
+        const contexts = createSection({ title: 'Contexts' });
 
         const prompt = createPrompt({ persona, instructions, contents, contexts });
         const instructionText = 'Test instruction';
@@ -62,10 +62,10 @@ describe('Prompt', () => {
     });
 
     test('should add an instruction object', async () => {
-        const persona = createSection('Persona');
-        const instructions = createSection('Instructions');
-        const contents = createSection('Contents');
-        const contexts = createSection('Contexts');
+        const persona = createSection({ title: 'Persona' });
+        const instructions = createSection({ title: 'Instructions' });
+        const contents = createSection({ title: 'Contents' });
+        const contexts = createSection({ title: 'Contexts' });
 
         const prompt = createPrompt({ persona, instructions, contents, contexts });
         const instruction = { text: 'Test instruction', weight: 1 };
@@ -77,13 +77,13 @@ describe('Prompt', () => {
 
     test('should add an instruction section', async () => {
         const { create } = await import('../src/items/section');
-        const persona = createSection('Persona');
-        const instructions = createSection('Instructions');
-        const contents = createSection('Contents');
-        const contexts = createSection('Contexts');
+        const persona = createSection({ title: 'Persona' });
+        const instructions = createSection({ title: 'Instructions' });
+        const contents = createSection({ title: 'Contents' });
+        const contexts = createSection({ title: 'Contexts' });
 
         const prompt = createPrompt({ persona, instructions, contents, contexts });
-        const section = create('Test Section');
+        const section = create({ title: 'Test Section' });
 
         instructions.add(section);
 
@@ -91,10 +91,10 @@ describe('Prompt', () => {
     });
 
     test('should add content from a string', async () => {
-        const persona = createSection('Persona');
-        const instructions = createSection('Instructions');
-        const contents = createSection('Contents');
-        const contexts = createSection('Contexts');
+        const persona = createSection({ title: 'Persona' });
+        const instructions = createSection({ title: 'Instructions' });
+        const contents = createSection({ title: 'Contents' });
+        const contexts = createSection({ title: 'Contexts' });
 
         const prompt = createPrompt({ persona, instructions, contents, contexts });
         const contentText = 'Test content';
@@ -107,10 +107,10 @@ describe('Prompt', () => {
     });
 
     test('should add content object', async () => {
-        const persona = createSection('Persona');
-        const instructions = createSection('Instructions');
-        const contents = createSection('Contents');
-        const contexts = createSection('Contexts');
+        const persona = createSection({ title: 'Persona' });
+        const instructions = createSection({ title: 'Instructions' });
+        const contents = createSection({ title: 'Contents' });
+        const contexts = createSection({ title: 'Contexts' });
 
         const prompt = createPrompt({ persona, instructions, contents, contexts });
         const content = { text: 'Test content', weight: 1 };
@@ -122,13 +122,13 @@ describe('Prompt', () => {
 
     test('should add content section', async () => {
         const { create } = await import('../src/items/section');
-        const persona = createSection('Persona');
-        const instructions = createSection('Instructions');
-        const contents = createSection('Contents');
-        const contexts = createSection('Contexts');
+        const persona = createSection({ title: 'Persona' });
+        const instructions = createSection({ title: 'Instructions' });
+        const contents = createSection({ title: 'Contents' });
+        const contexts = createSection({ title: 'Contexts' });
 
         const prompt = createPrompt({ persona, instructions, contents, contexts });
-        const section = create('Test Section');
+        const section = create({ title: 'Test Section' });
 
         contents.add(section);
 
@@ -136,10 +136,10 @@ describe('Prompt', () => {
     });
 
     test('should add context from a string', async () => {
-        const persona = createSection('Persona');
-        const instructions = createSection('Instructions');
-        const contents = createSection('Contents');
-        const contexts = createSection('Contexts');
+        const persona = createSection({ title: 'Persona' });
+        const instructions = createSection({ title: 'Instructions' });
+        const contents = createSection({ title: 'Contents' });
+        const contexts = createSection({ title: 'Contexts' });
 
         const prompt = createPrompt({ persona, instructions, contents, contexts });
         const contextText = 'Test context';
@@ -152,10 +152,10 @@ describe('Prompt', () => {
     });
 
     test('should add context object', async () => {
-        const persona = createSection('Persona');
-        const instructions = createSection('Instructions');
-        const contents = createSection('Contents');
-        const contexts = createSection('Contexts');
+        const persona = createSection({ title: 'Persona' });
+        const instructions = createSection({ title: 'Instructions' });
+        const contents = createSection({ title: 'Contents' });
+        const contexts = createSection({ title: 'Contexts' });
 
         const prompt = createPrompt({ persona, instructions, contents, contexts });
         const context = { text: 'Test context', weight: 1 };
@@ -167,13 +167,13 @@ describe('Prompt', () => {
 
     test('should add context section', async () => {
         const { create } = await import('../src/items/section');
-        const persona = createSection('Persona');
-        const instructions = createSection('Instructions');
-        const contents = createSection('Contents');
-        const contexts = createSection('Contexts');
+        const persona = createSection({ title: 'Persona' });
+        const instructions = createSection({ title: 'Instructions' });
+        const contents = createSection({ title: 'Contents' });
+        const contexts = createSection({ title: 'Contexts' });
 
         const prompt = createPrompt({ persona, instructions, contents, contexts });
-        const section = create('Test Section');
+        const section = create({ title: 'Test Section' });
 
         contexts.add(section);
 

@@ -169,7 +169,7 @@ describe('Builder', () => {
 
         await instance.addContent(content);
 
-        expect(mockParser.parse).toHaveBeenCalledWith(content);
+        expect(mockParser.parse).toHaveBeenCalledWith(content, { title: undefined });
         expect(mockSection.add).toHaveBeenCalled();
     });
 
@@ -179,7 +179,7 @@ describe('Builder', () => {
 
         await instance.addContext(context);
 
-        expect(mockParser.parse).toHaveBeenCalledWith(context);
+        expect(mockParser.parse).toHaveBeenCalledWith(context, { title: undefined });
         expect(mockSection.add).toHaveBeenCalled();
     });
 

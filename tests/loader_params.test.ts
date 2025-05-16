@@ -89,7 +89,7 @@ describe('Loader', () => {
             await loader.load([contextDir]);
 
             // Check that createSection was called with empty parameters object
-            expect(mockCreateSection).toHaveBeenCalledWith(expect.any(String), { parameters: {} });
+            expect(mockCreateSection).toHaveBeenCalledWith(expect.objectContaining({ parameters: {} }));
         });
 
         it('should pass custom parameters to created sections', async () => {
@@ -115,7 +115,7 @@ describe('Loader', () => {
             await loader.load([contextDir]);
 
             // Check that createSection was called with our custom parameters
-            expect(mockCreateSection).toHaveBeenCalledWith(expect.any(String), { parameters: customParams });
+            expect(mockCreateSection).toHaveBeenCalledWith(expect.objectContaining({ parameters: customParams }));
         });
 
         it('should pass parameters to both main sections and subsections', async () => {
@@ -147,10 +147,18 @@ describe('Loader', () => {
                 return Promise.resolve('# File 1\nFile content');
             });
             // @ts-ignore
-            mockCreateSection.mockImplementation((title: string, options: any) => {
+            mockCreateSection.mockImplementation((options: any) => {
+                // Return an object that tracks subsections added
+                const subsections: any[] = [];
                 return {
-                    add: jest.fn(),
-                    parameters: options.parameters
+                    add: jest.fn((content, opts) => {
+                        // If the content is a section (has parameters property), count it
+                        if (content && typeof content === 'object' && 'parameters' in content) {
+                            subsections.push(content);
+                        }
+                    }),
+                    parameters: options.parameters,
+                    subsections // Track subsections to help with test assertions
                 };
             });
 
@@ -159,11 +167,21 @@ describe('Loader', () => {
             // Verify that all createSection calls included our parameters
             // Should be called for main section and file section
             const calls = mockCreateSection.mock.calls;
-            expect(calls.length).toBeGreaterThanOrEqual(2);
+            expect(calls.length).toBeGreaterThanOrEqual(1); // At least the main section
 
-            // Check all calls for parameters
-            calls.forEach(call => {
-                expect(call[1]).toHaveProperty('parameters', customParams);
+            // Get the main section
+            const mainSection = mockCreateSection.mock.results[0].value as {
+                parameters: any;
+                subsections: Array<{ parameters: any }>;
+            };
+
+            // Check that at least one file section was created and added to main section
+            expect(mainSection.subsections.length).toBeGreaterThanOrEqual(1);
+
+            // Check all sections for parameters (main and file section)
+            expect(mainSection.parameters).toEqual(customParams);
+            mainSection.subsections.forEach((section: { parameters: any }) => {
+                expect(section.parameters).toEqual(customParams);
             });
         });
 
@@ -186,8 +204,8 @@ describe('Loader', () => {
 
             // Should create two main sections with parameters
             expect(mockCreateSection).toHaveBeenCalledTimes(2);
-            expect(mockCreateSection).toHaveBeenNthCalledWith(1, 'context1', { parameters: customParams });
-            expect(mockCreateSection).toHaveBeenNthCalledWith(2, 'context2', { parameters: customParams });
+            expect(mockCreateSection).toHaveBeenNthCalledWith(1, { parameters: customParams, title: 'context1' });
+            expect(mockCreateSection).toHaveBeenNthCalledWith(2, { parameters: customParams, title: 'context2' });
         });
     });
 
