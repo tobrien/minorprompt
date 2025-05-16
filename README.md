@@ -49,7 +49,7 @@ npm install @tobrien/minorprompt
 import { createSection, createPrompt, Formatter, Section, Instruction } from '@tobrien/minorprompt';
 
 // Create a new prompt
-const section: Section<Instruction> = createSection<Instruction>("Instructions");
+const section: Section<Instruction> = createSection<Instruction>({ title: "Instructions" });
 
 // Add instructions
 section.add("Answer in a concise manner");
@@ -121,18 +121,18 @@ Groups related items together:
 ### Creating Sections
 
 ```js
-import { createSection, Formatter, Section, Instruction } from '@tobrien/minorprompt';
+import { createSection, Formatter, Section, Instruction, Context } from '@tobrien/minorprompt';
 
 // Create a section for coding best practices
-const instructions: Section<Instruction> = createSection<Instruction>("Instructions");
+const instructions: Section<Instruction> = createSection<Instruction>({ title: "Instructions" });
 instructions.add("Follow DRY (Don't Repeat Yourself) principles");
 instructions.add("Write readable code with clear variable names");
 instructions.add("Add comments for complex logic");
 
-const writerPersona: Section<Instruction> = createSection<Instruction>("Writer Persona");
+const writerPersona: Section<Instruction> = createSection<Instruction>({ title: "Writer Persona" });
 writerPersona.add("You are an amazingly talented writer who is awesome.");
 
-const literatureContext: Section<Context> = createSection<Context>("Literature Context");
+const literatureContext: Section<Context> = createSection<Context>({ title: "Literature Context" });
 literatureContext.add("Here is the full text of a really long book.");
 ```
 
@@ -146,7 +146,8 @@ You can define `weight` for the section itself and a default `itemWeight` for it
 import { createSection, Formatter, Section, Instruction } from '@tobrien/minorprompt';
 
 // Create a section with specific weights and parameters
-const weightedSection: Section<Instruction> = createSection<Instruction>("Weighted Topics", {
+const weightedSection: Section<Instruction> = createSection<Instruction>({ 
+  title: "Weighted Topics",
   weight: 10, // Weight for the entire section
   itemWeight: 5, // Default weight for items in this section
   parameters: { topic: "advanced" } // Parameters passed to items
@@ -165,13 +166,13 @@ MinorPrompt supports dynamic content in your prompts through the use of paramete
 Parameters can be passed when creating a prompt, a persona, or a section. They can also be supplied directly when adding individual items like instructions, content, or context if those items are strings with placeholders.
 
 ```js
-import { createSection, createParameters, Formatter, Section, Instruction } from '@tobrien/minorprompt';
+import { createSection, createParameters, Formatter, Section, Instruction, Parameters } from '@tobrien/minorprompt';
 
 const parameters: Parameters = createParameters({
   "targetLanguage": "Spanish",
 })
 
-const instructions: Section<Instruction> = createSection("Instructions", { parameters });
+const instructions: Section<Instruction> = createSection({ title: "Instructions", parameters });
 instructions.add("Translate the following text to {{targetLanguage}}.");
 
 const formatter = Formatter.create({ formatOptions: { sectionSeparator: "markdown" }});
@@ -377,7 +378,7 @@ These methods return the `Section` instance itself, allowing for fluent chaining
 ```js
 import { createSection, Formatter, Section, Instruction } from '@tobrien/minorprompt';
 
-const mySection: Section<Instruction> = createSection("Example");
+const mySection: Section<Instruction> = createSection({ title: "Example" });
 
 mySection
   .add("First item")
@@ -394,6 +395,8 @@ console.log( formatted );
 //
 //         This goes second
 ```
+```
+
 ### Using the MinorPrompt Loader for File-Based Prompts
 
 MinorPrompt provides a Loader utility that allows you to load prompt templates from external files. This is particularly useful when you want to:
@@ -480,8 +483,6 @@ Different LLM providers have different recommendations for prompt formatting:
 The field of prompt engineering is rapidly evolving, with new research and best practices emerging regularly. MinorPrompt's flexible formatting system allows you to adapt to these changes without rewriting your prompts entirely.
 
 By separating the structure of your prompt (instructions, context, content) from its formatting, MinorPrompt makes it easier to experiment with different formatting approaches to find what works best for your specific use case and model.
-
-
 
 
 ## Model Support
